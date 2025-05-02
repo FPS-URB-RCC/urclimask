@@ -4,7 +4,7 @@ This repository provides a set of tools developed within the framework of the **
 
 ![Urban Climate Mask](London_UHI.png)
 
-*Figure:* Urban Heat Island (UHI) for London using two Regional Climate Models. Red- and blue-bordered cells correspond to urban and rural areas delineated using the urclimask tool.
+*Figure:* Urban Heat Island (UHI) for London using two Regional Climate Models. Red- and blue-bordered cells correspond to urban and rural areas delineated using the `urclimask` tool.
 
 ## Contents
 
