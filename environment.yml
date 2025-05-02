@@ -1,0 +1,20 @@
+name: urclimask
+channels:
+  - conda-forge
+dependencies:
+  - cartopy
+  - cftime
+  - dask
+  - geopandas
+  - icecream
+  - jupyter
+  - matplotlib
+  - numpy
+  - pandas
+  - pip
+  - python
+  - xarray
+  - pip:
+      - cf-xarray
+      - urclimask==0.1
+prefix: /home/javi/mambaforge/envs/urclimask

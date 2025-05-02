@@ -2,22 +2,30 @@
 
 This repository provides a set of tools developed within the framework of the **CORDEX Flagship Pilot Study (FPS) on URBan environments and Regional Climate Change (URB-RCC)** to identify **urban** and surrounding **rural** areas from **climate model** outputs, tailored to specific cities of interest. The code includes functionalities to assess **Urban Heat Island (UHI)** intensity, with configurable parameters adaptable to different spatial resolutions and urban environments.
 
+![Urban Climate Mask](London_UHI.png)
+
+*Figure:* Urban Heat Island (UHI) for London using two Regional Climate Models. Red- and blue-bordered cells correspond to urban and rural areas delineated using the urclimask tool.
+
 ## Contents
 
 | Directory | Contents |
 | :-------- | :------- |
 |  [urclimask]() | Python code to delimitate urban/rural mask and assees Urban Heat Island analysys.
 |  [notebooks]() | Jupyter notebooks with examples on how to use the library for fiffenre RCMs and cities.
-| [doc]() | Description of the model.
+|  [CORDEX-CORE-WG]() | Notebooks and resources used to generate the urban/rural mask database from CORDEX-CORE and CORDEX-EUR-11 within the framework of the CORDEX Flagship Pilot Study (FPS) on Urban Environments and Regional Climate Change (URB-RCC).
+| [doc]() | Description of the algorithm for urban/rural delimitation.
 
 ## Requirements
 
 Scripts and (jupyter) notebooks are provided in [Python](https://www.python.org/) to ensure reproducibility and reusability of the results. The simplest way to match all these requirements is by using a dedicated [conda](https://docs.conda.io) environment, which can be easily installed by issuing:
 
 ```sh
-conda create -n urclimask pip jupyter
+git clone git@github.com:FPS-URB-RCC/urclimask.git
+conda create -n urclimask
 conda activate urclimask
-pip install urclimask
+cd urclimask
+conda env update --file environment.yml --prune
+pip install -e .
 ```
 
 ## Examples of use
