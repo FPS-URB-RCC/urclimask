@@ -10,10 +10,10 @@ This repository provides a set of tools developed within the framework of the **
 
 | Directory | Contents |
 | :-------- | :------- |
-|  [urclimask]() | Python code to delimitate urban/rural mask and assees Urban Heat Island analysys.
-|  [notebooks]() | Jupyter notebooks with examples on how to use the library for fiffenre RCMs and cities.
-|  [CORDEX-CORE-WG]() | Notebooks and resources used to generate the urban/rural mask database from CORDEX-CORE and CORDEX-EUR-11 within the framework of the CORDEX Flagship Pilot Study (FPS) on Urban Environments and Regional Climate Change (URB-RCC).
-| [doc]() | Description of the algorithm for urban/rural delimitation.
+|  [urclimask](https://github.com/FPS-URB-RCC/urclimask/tree/main/urclimask) | Python code to delimitate urban/rural mask and assees Urban Heat Island analysys.
+|  [notebooks](https://github.com/FPS-URB-RCC/urclimask/tree/main/notebooks) | Jupyter notebooks with examples on how to use the library for fiffenre RCMs and cities.
+|  [CORDEX-CORE-WG](https://github.com/FPS-URB-RCC/urclimask/tree/main/CORDEX-CORE-WG) | Notebooks and resources used to generate the urban/rural mask database from CORDEX-CORE and CORDEX-EUR-11 within the framework of the CORDEX Flagship Pilot Study (FPS) on Urban Environments and Regional Climate Change (URB-RCC).
+| [doc](https://github.com/FPS-URB-RCC/urclimask/tree/main/doc) | Description of the algorithm for urban/rural delimitation.
 
 ## Requirements
 
@@ -30,11 +30,11 @@ pip install -e .
 
 ## Examples of use
 
-Examples of use of the `urclimask` library are available in the form of [jupyter notebooks](). To run the examples follow the following steps:
+Examples of use of the `urclimask` library are available in the form of [notebooks](https://github.com/FPS-URB-RCC/urclimask/tree/main/notebooks). To run the examples follow the following steps:
 
 1. Download the folder [notebooks]() from the github repository, or navigate to the folder should you have cloned the repo.
 2. Open jupyter notebook of Jupyter Lab (type `jupyter notebook` or `jupyter lab`  in the terminal)
-3. Open one of the tests available in the [notebooks]() folder with jupyter notebook  (e.g. [paris_across_CORDEX_resolutions.ipynb]())
+3. Open one of the tests available in the [notebooks]() folder with jupyter notebook  (e.g. [paris_across_CORDEX_resolutions.ipynb](https://github.com/FPS-URB-RCC/urclimask/blob/main/notebooks/paris_across_CORDEX_resolutions.ipynb))
 
 ## Errata and problem reporting
 
