@@ -1,4 +1,4 @@
-# urclimask (Urban/Rural CLImate Mask defintion)
+# Urban/Rural CLImate Mask definition (urclimask)
 
 This repository provides a set of tools developed within the framework of the **CORDEX Flagship Pilot Study (FPS) on URBan environments and Regional Climate Change (URB-RCC)** to identify **urban** and surrounding **rural** areas from **climate model** outputs, tailored to specific cities of interest. The code includes functionalities to assess **Urban Heat Island (UHI)** intensity, with configurable parameters adaptable to different spatial resolutions and urban environments.
 
