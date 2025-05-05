@@ -1,19 +1,19 @@
-# Urban/Rural CLImate Mask definition (urclimask)
+# Urban/Rural CLImate MASK definition (URCLIMASK)
 
-This repository provides a set of tools developed within the framework of the **CORDEX Flagship Pilot Study (FPS) on URBan environments and Regional Climate Change (URB-RCC)** to identify **urban** and surrounding **rural** areas from **climate model** outputs, tailored to specific cities of interest. The code includes functionalities to assess **Urban Heat Island (UHI)** intensity, with configurable parameters adaptable to different spatial resolutions and urban environments.
+This repository provides a set of tools developed within the framework of the **CORDEX Flagship Pilot Study (FPS) on URBan environments and Regional Climate Change (URB-RCC)** to identify **urban** and surrounding **rural** areas from **climate model** outputs, tailored to specific cities of interest. The code includes functionalities to assess **Urban Heat Island (UHI)** intensity, with configurable hyperparameters adaptable to different spatial resolutions and urban environments.
 
 ![Urban Climate Mask](London_UHI.png)
 
-*Figure:* Urban Heat Island (UHI) for London using two Regional Climate Models. Red- and blue-bordered cells correspond to urban and rural areas delineated using the `urclimask` tool.
+Figure: Urban Heat Island (UHI) for London using two Regional Climate Models. Red- and blue-bordered cells correspond to urban and rural areas delineated using the `urclimask` tool.
 
 ## Contents
 
 | Directory | Contents |
 | :-------- | :------- |
-|  [urclimask](https://github.com/FPS-URB-RCC/urclimask/tree/main/urclimask) | Python code to delimitate urban/rural mask and assees Urban Heat Island analysys.
+|  [urclimask](https://github.com/FPS-URB-RCC/urclimask/tree/main/urclimask) | Python code to delineate urban/rural mask and assees Urban Heat Island analysys.
 |  [notebooks](https://github.com/FPS-URB-RCC/urclimask/tree/main/notebooks) | Jupyter notebooks with examples on how to use the library for fiffenre RCMs and cities.
 |  [CORDEX-CORE-WG](https://github.com/FPS-URB-RCC/urclimask/tree/main/CORDEX-CORE-WG) | Notebooks and resources used to generate the urban/rural mask database from CORDEX-CORE and CORDEX-EUR-11 within the framework of the CORDEX Flagship Pilot Study (FPS) on Urban Environments and Regional Climate Change (URB-RCC).
-| [doc](https://github.com/FPS-URB-RCC/urclimask/tree/main/doc) | Description of the algorithm for urban/rural delimitation.
+| [doc](https://github.com/FPS-URB-RCC/urclimask/tree/main/doc) | Description of the algorithm for urban/rural delineation.
 
 ## Requirements
 
