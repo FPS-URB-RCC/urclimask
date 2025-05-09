@@ -158,8 +158,8 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         # If all objects were removed, select the region closest to the city center
         if np.max(cleaned_mask) == 0:
             # Calculate pixel indices closest to the city center coordinates
-            y_center = np.abs(mask['lat'].values - self.lat_city).argmin()
-            x_center = np.abs(mask['lon'].values - self.lon_city).argmin()
+            y_center = np.abs(mask['rlat'].values - self.lat_city).argmin()
+            x_center = np.abs(mask['rlon'].values - self.lon_city).argmin()
             center_pixel = np.array([y_center, x_center])
     
             # Compute distances from each region centroid to the city center
