@@ -174,10 +174,10 @@ def plot_annual_cycle(variable = None, ds = None, urban_vicinity = None,
     else:
         fig = None
         
-    (urban_mean).plot(ax=ax,  color = 'r', linestyle='-', 
+    (urban_mean).plot(ax=ax,  color = '#A52A2A', linestyle='-', 
                                      linewidth = 4, label='Urban mean')
                          
-    (rural_mean-rural_mean).plot(ax=ax,  color = 'b', linestyle='-', 
+    (rural_mean-rural_mean).plot(ax=ax,  color = '#8A8D28', linestyle='-', 
                                  linewidth = 4, label='Vicinity mean')
                          
     # Plot individual data squares for urban and rural areas if requested
@@ -185,7 +185,7 @@ def plot_annual_cycle(variable = None, ds = None, urban_vicinity = None,
         # Fill within percentiles
         axis = [rural_anomaly.get_axis_num(rural_anomaly.cf['X'].name),
                 rural_anomaly.get_axis_num(rural_anomaly.cf['Y'].name)]
-        colors = ['blue', 'red']
+        colors = ['#8A8D28', '#A52A2A']
         for index, anom in enumerate([ rural_anomaly, urban_anomaly]):
             for percentile in percentiles:
                 lower_percentile = np.nanpercentile(anom, percentile, axis=axis)
@@ -332,19 +332,19 @@ def plot_daily_cycle(variable, ds_var=None, urban_vicinity=None,
     else:
         fig = None
 
-    urban_mean.plot(ax=ax, color='r', linestyle='-', 
+    urban_mean.plot(ax=ax, color='#A52A2A', linestyle='-', 
                     linewidth=4, label='Urban mean')
     if annomaly == True:
-        (rural_mean - rural_mean).plot(ax=ax, color='b', linestyle='-', 
+        (rural_mean - rural_mean).plot(ax=ax, color='#8A8D28', linestyle='-', 
                                        linewidth=4, label='Vicinity mean')
     else:
-        rural_mean.plot(ax=ax, color='b', linestyle='-', 
+        rural_mean.plot(ax=ax, color='#8A8D28', linestyle='-', 
                                        linewidth=4, label='Vicinity mean')
     # Plot individual data squares for urban and rural areas if requested
     if data_squares:
         axis = [rural_anomaly.get_axis_num(rural_anomaly.cf['X'].name),
                 rural_anomaly.get_axis_num(rural_anomaly.cf['Y'].name)]
-        colors = ['blue', 'red']
+        colors = ['#8A8D28', '#A52A2A']
         for index, anom in enumerate([rural_anomaly, urban_anomaly]):
             for percentile in percentiles:
                 lower_percentile = np.nanpercentile(anom, percentile, axis=axis)

@@ -449,6 +449,134 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         plt.subplots_adjust(wspace=0.1, hspace=0.1)  # Adjust vertical and horizontal space
         return fig
 
+    def plot_fixed_layers_composite(self, ds_sftuf, ds_orog, ds_sftlf,
+                                     sftuf_mask, orog_mask, sftlf_mask,
+                                     urban_th_plot=10, urban_areas=None,
+                                     ucdb_city=None, ax=None):
+        """
+        Plot composite map showing orography, urban fraction, and land-sea mask on a single axis.
+    
+        This function overlays three fixed geospatial layers—elevation (orography), 
+        urban fraction, and land-sea mask—on a single plot using a PlateCarree projection. 
+        It allows optional inclusion of city boundaries from UCDB and surrounding urban polygons.
+        The result is a visually enhanced map suitable for analyzing spatial relationships 
+        between topography, urban extent, and coastline.
+    
+        Parameters
+        ----------
+        ds_sftuf : xarray.Dataset
+            Dataset containing the urban fraction variable (`sftuf`).
+        ds_orog : xarray.Dataset
+            Dataset containing the orography (elevation) variable (`orog`).
+        ds_sftlf : xarray.Dataset
+            Dataset containing the land-sea fraction variable (`sftlf`).
+        sftuf_mask : numpy.ndarray or xarray.DataArray
+            Binary mask to define valid urban pixels (1 = keep, 0 = mask out).
+        orog_mask : numpy.ndarray or xarray.DataArray
+            Binary mask to define valid elevation pixels (1 = keep, 0 = mask out).
+        sftlf_mask : numpy.ndarray or xarray.DataArray
+            Binary mask indicating land pixels (1 = land, 0 = sea).
+        urban_th_plot : int, optional
+            Threshold to display urban fraction values (default is 10).
+        urban_areas : geopandas.GeoDataFrame, optional
+            Additional polygons for urban vicinity, plotted in overlay.
+        ucdb_city : geopandas.GeoDataFrame, optional
+            UCDB city boundary polygon to be highlighted.
+        ax : matplotlib.axes._subplots.AxesSubplot, optional
+            Optional axis object. If not provided, a new figure is created.
+    
+        Returns
+        -------
+        fig : matplotlib.figure.Figure
+            The resulting matplotlib figure object with the rendered plot.
+    
+        Notes
+        -----
+        - The function expects several class attributes to be defined:
+          `self.urban_var`, `self.urban_th`, `self.urban_sur_th`, 
+          `self.urban_elev_min`, `self.urban_elev_max`, `self.orog_diff`, and `self.sftlf_th`.
+        - A custom terrain colormap is used for orography.
+        - Three colorbars are included: one for each layer (elevation, urban, sea).
+        - Urban polygons are plotted with zorder=1000 for visibility.
+        """
+
+        
+        # Custom colormap for elevation
+        colors = ['#278908', '#faf998', '#66473b']
+        custom_cmap = LinearSegmentedColormap.from_list("custom_terrain", colors)
+    
+        # Create figure and axis with PlateCarree projection
+        proj = ccrs.PlateCarree()
+        if ax is None:
+            fig, ax = plt.subplots(subplot_kw={'projection': proj}, figsize=(16, 10))
+        else:
+            fig = ax.figure
+    
+        # 1. Orography (Elevation)
+        orog_data = ds_orog['orog'].where(orog_mask == 1, np.nan)
+        im_orog = ax.pcolormesh(ds_orog.lon, ds_orog.lat, orog_data, cmap=custom_cmap,
+                                vmin=0, vmax=275, zorder=0,alpha = 0.9)
+    
+        # 2. Urban Fraction
+        urban_data = ds_sftuf[self.urban_var].where(ds_sftuf[self.urban_var] > urban_th_plot, np.nan)
+        im_urb = ax.pcolormesh(ds_sftuf.lon, ds_sftuf.lat, urban_data, cmap='binary',
+                               vmin=0, vmax=100, zorder=1)
+    
+        # 3. Sea Mask
+        sftlf_inverse = np.where(sftlf_mask == 1, np.nan, ds_sftlf["sftlf"])
+        im_landsea = ax.pcolormesh(ds_sftlf.lon, ds_sftlf.lat, sftlf_inverse, cmap='Blues_r',
+                                   vmin=0, vmax=100, zorder=2, alpha = 1)
+    
+        # 4. UCDB city polygon (highlighted in pink)
+        if ucdb_city is not None:
+            ucdb_city.plot(ax=ax, facecolor="none", transform=proj, edgecolor="#ff66ff", linewidth=2, zorder=1000)
+    
+        # 5. Urban vicinity polygons (optional)
+        if urban_areas:
+            Urban_vicinity.plot_urban_polygon(self, urban_areas, ax)
+    
+        # Coastlines and dynamic title
+        ax.coastlines(zorder=1000)
+        elev_lim_min = self.urban_elev_min - self.orog_diff
+        elev_lim_max = self.urban_elev_max + self.orog_diff
+        ax.set_title(
+            f"Orography + Urban + Land-sea\n"
+            f"Orography: {elev_lim_min:.0f}–{elev_lim_max:.0f} m | "
+            f"Urban sftuf > {self.urban_th}, surr. <= {self.urban_sur_th} | "
+            f"Land-sea ≤ {self.sftlf_th}%",
+            fontsize=12
+        )
+    
+        # Adjust axis to make room for colorbars
+        pos = ax.get_position()
+        ax.set_position([pos.x0, pos.y0 + 0.05, pos.width, pos.height - 0.05])
+        
+        # Common sizes
+        cbar_width = 0.015
+        spacing1 = 0.025 # space from main axis
+        spacing2 = 0.07  # space between the two right-side colorbars
+    
+        # Colorbar 1: Horizontal for elevation (bottom)
+        cax_orog = fig.add_axes([pos.x0, pos.y0 - 0.08, pos.width, 0.02])
+        cbar_orog = fig.colorbar(im_orog, cax=cax_orog, orientation='horizontal')
+        cbar_orog.set_label('Elevation (m)', fontsize=16)
+        cbar_orog.ax.tick_params(labelsize=14)
+    
+        # Colorbar 2: Urban Fraction (right side)
+        cax_urb = fig.add_axes([pos.x1 + spacing1, pos.y0, cbar_width, pos.height])
+        cbar_urb = fig.colorbar(im_urb, cax=cax_urb, orientation='vertical')
+        cbar_urb.set_label('Urban Fraction (%)', fontsize=16)
+        cbar_urb.ax.tick_params(labelsize=14)
+    
+        # Colorbar 3: Land-sea Mask (even further right)
+        cax_ls = fig.add_axes([pos.x1 + spacing1 + cbar_width + spacing2, pos.y0, cbar_width, pos.height])
+        cbar_ls = fig.colorbar(im_landsea, cax=cax_ls, orientation='vertical')
+        cbar_ls.set_label('Land-sea (%)', fontsize=16)
+        cbar_ls.ax.tick_params(labelsize=14)
+
+        plt.show()
+        return fig
+
     def netcdf_attrs(self, ds):        
         """
         Add metadata to urban area file.
