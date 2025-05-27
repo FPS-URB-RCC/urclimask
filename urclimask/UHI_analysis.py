@@ -16,8 +16,8 @@ class UrbanIsland:
         urban_vicinity = None, 
         anomaly = 'abs',
         period= 'Annual',
-        obs_attributes = None, 
-        obs_timeseries = None, 
+        obs_attributes = pd.DataFrame(), 
+        obs_timeseries = pd.DataFrame(), 
         ):
         """
         Parameters:
@@ -32,8 +32,8 @@ class UrbanIsland:
         self.urban_vicinity = urban_vicinity
         self.anomaly = anomaly
         self.period = period
-        self.obs_attr = obs_attributes if obs_attributes is not None else pd.DataFrame()
-        self.obs_time = obs_timeseries if obs_timeseries is not None else pd.DataFrame()
+        self.obs_attr = obs_attributes
+        self.obs_time = obs_timeseries
 
     def compute_spatial_climatology(self):
         """
@@ -69,6 +69,7 @@ class UrbanIsland:
         self.ds_spatial_climatology = ds_anomaly.compute()
         if obs_anomaly is not None:
             self.obs_spatial_climatology = obs_anomaly
+        
         
     def compute_annual_cycle(self):
         """
@@ -295,17 +296,17 @@ class UrbanIsland:
     
         fig, ax = plt.subplots(figsize=(15, 7))
 
-        (urban_mean).plot(ax=ax,  color = 'r', linestyle='-', 
+        (urban_mean).plot(ax=ax,  color = '#A52A2A', linestyle='-', 
                                          linewidth = 4, label='Urban mean')
                              
-        (rural_mean-rural_mean).plot(ax=ax,  color = 'b', linestyle='-', 
+        (rural_mean-rural_mean).plot(ax=ax,  color = '#8A8D28', linestyle='-', 
                                      linewidth = 4, label='Vicinity mean')
                              
         if percentiles:
             # Fill within percentiles
             axis = [rural_anomaly.get_axis_num(rural_anomaly.cf['X'].name),
                     rural_anomaly.get_axis_num(rural_anomaly.cf['Y'].name)]
-            colors = ['blue', 'red']
+            colors = ['#8A8D28', '#A52A2A']
             for index, anom in enumerate([ rural_anomaly, urban_anomaly]):
                 for percentile in percentiles:
                     lower_percentile = np.nanpercentile(anom, percentile, axis=axis)
@@ -414,10 +415,10 @@ class UrbanIsland:
         
             fig, ax = plt.subplots(figsize=(15, 7))
     
-            (urban_mean).plot(ax=ax,  color = 'r', linestyle='-', 
+            (urban_mean).plot(ax=ax,  color = '#A52A2A', linestyle='-', 
                                              linewidth = 4, label='Urban mean')
                                  
-            (rural_mean-rural_mean).plot(ax=ax,  color = 'b', linestyle='-', 
+            (rural_mean-rural_mean).plot(ax=ax,  color = '#8A8D28', linestyle='-', 
                                          linewidth = 4, label='Vicinity mean')
     
             
@@ -426,7 +427,7 @@ class UrbanIsland:
                 # Fill within percentiles
                 axis = [rural_anomaly.get_axis_num(rural_anomaly.cf['X'].name),
                         rural_anomaly.get_axis_num(rural_anomaly.cf['Y'].name)]
-                colors = ['blue', 'red']
+                colors = ['#8A8D28', '#A52A2A']
                 for index, anom in enumerate([ rural_anomaly, urban_anomaly]):
                     for percentile in percentiles:
                         lower_percentile = np.nanpercentile(anom, percentile, axis=axis)
