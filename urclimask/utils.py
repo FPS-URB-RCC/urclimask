@@ -158,9 +158,9 @@ def plot_urban_polygon(ds, ax):
     gdf_urban = gpd.GeoDataFrame(geometry=[unified_urban_polygon])
     gdf_non_urban = gpd.GeoDataFrame(geometry=[unified_non_urban_polygon])
     # Plot the boundary of the unified non-urban polygon (in blue)
-    gdf_non_urban.boundary.plot(ax=ax,color='b', zorder=1, linewidth=2)
+    gdf_non_urban.boundary.plot(ax=ax,color='#8A8D28', zorder=1, linewidth=2)
     # Plot the boundary of the unified urban polygon (in red) on top of the non-urban
-    gdf_urban.boundary.plot(ax=ax,  color='red', zorder=100, linewidth=2)
+    gdf_urban.boundary.plot(ax=ax,  color='#A52A2A', zorder=100, linewidth=2)
 
     return(gdf_urban, gdf_non_urban)
 

@@ -54,7 +54,7 @@ def get_ghcnd_df(code):
     except:
        try:
             # Load the combined_temp_data.csv file
-            file_path = 'PARIS_surface_weather_data/combined_temp_data.csv'
+            file_path = '/lustre/gmeteo/WORK/quintanay/CORDEX-CORE-WG/uhi/PARIS_surface_weather_data/combined_temp_data.csv'
             combined_data = pd.read_csv(file_path)
 
             # Filter the data by the station code
@@ -123,6 +123,7 @@ def get_valid_timeseries(city, stations, ds_var, variable = 'tasmin', valid_thre
         df_time_series_obs = valid_time_series
         
     return(stations[stations.code.isin(valid_codes)], df_time_series_obs, ds_var_period)
+
 
 def available_vars(station):
     """

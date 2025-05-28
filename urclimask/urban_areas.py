@@ -338,116 +338,7 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         
         return urban_area
             
-    def plot_static_variables(self,
-                              *,
-                              ds_sfturf, 
-                              ds_orog, 
-                              ds_sftlf,
-                              sfturf_mask, 
-                              orog_mask, 
-                              sftlf_mask, 
-                              urban_areas = None,
-                             ):
-        """
-        Plot fix variables including urban fraction, orography, and land-sea mask.
     
-        Parameters:
-        ds_sfturf (xr.Dataset): Dataset containing urban fraction data.
-        ds_orog (xr.Dataset): Dataset containing orography data.
-        ds_sftlf (xr.Dataset): Dataset containing land-sea mask data.
-        sfturf_mask (xr.DataArray): Mask for urban fraction.
-        orog_mask (xr.DataArray): Mask for orography.
-        sftlf_mask (xr.DataArray): Mask for land-sea mask.
-        urban_areas (xr.Dataset, optional): Dataset containing urban area borders.
-                                            Defaults to None.
-    
-        Returns:
-        matplotlib.figure.Figure: The generated figure.
-        """
-        colors = ['#7C5B49', '#92716B', '#A89080', '#C0B49E', '#DACCB9', '#F5F5DC']
-        colors = ['#278908', '#faf998', '#66473b']
-        custom_cmap = LinearSegmentedColormap.from_list("custom_terrain", colors)
-        
-        proj = ccrs.PlateCarree()
-        fig, axes = plt.subplots(2, 3, subplot_kw={'projection': proj}, figsize=(20, 10))
-                        
-        im1 = axes[0, 0].pcolormesh(ds_sfturf.lon, ds_sfturf.lat,
-                                    ds_sfturf[self.urban_var].values,
-                                    cmap='binary',
-                                    vmin = np.nanmin(ds_sfturf[self.urban_var]), 
-                                    vmax = np.nanmax(ds_sfturf[self.urban_var]))
-        cim1 = fig.colorbar(im1, ax=axes[0, 0], orientation='vertical')
-        cim1.set_label("Units: %")
-        axes[0, 0].set_title('Urban Fraction', fontsize = 14)
-        axes[0, 0].coastlines()
-        
-        im2 = axes[0, 1].pcolormesh(ds_orog.lon, ds_orog.lat,
-                                    ds_orog['orog'], 
-                                    cmap=custom_cmap, 
-                                    vmin = np.nanmin(ds_orog['orog']), 
-                                    vmax = np.nanmax(ds_orog['orog'])
-                                   )
-        
-        cim2 = fig.colorbar(im2, ax=axes[0, 1], orientation='vertical')
-        cim2.set_label("Units: m")
-        axes[0, 1].set_title('Orography', fontsize = 14)
-        axes[0, 1].coastlines()
-        
-        im3 = axes[0, 2].pcolormesh(ds_sftlf.lon, ds_sftlf.lat,
-                                    ds_sftlf["sftlf"],
-                                    cmap='winter', 
-                                    vmin = np.nanmin(ds_sftlf["sftlf"]), 
-                                    vmax = np.nanmax(ds_sftlf["sftlf"])
-                                   )
-        cim3 = fig.colorbar(im3, ax=axes[0, 2], orientation='vertical')
-        cim3.set_label("Units: %")
-        axes[0, 2].set_title('Land-sea', fontsize = 14)
-        axes[0, 2].coastlines()
-    
-        # masks
-        im1 = axes[1, 0].pcolormesh(ds_sfturf.lon, ds_sfturf.lat,
-                                    ds_sfturf[self.urban_var].where(sfturf_mask == 1, np.nan),
-                                    cmap='binary',
-                                    vmin = np.nanmin(ds_sfturf[self.urban_var]),
-                                    vmax = np.nanmax(ds_sfturf[self.urban_var])
-                                   )
-        fig.colorbar(im1, ax=axes[1, 0], orientation='vertical')
-        if not urban_areas:
-            axes[1, 0].set_title('Urban Fraction\n(urb_th >' +  str(self.urban_th) + ')')
-        else:
-            axes[1, 0].set_title(f"Urban Fraction\n(urb_th = {self.urban_th}, urb_sur_th = {self.urban_sur_th}\nscale = {self.scale}, max_city = {self.min_city_size})", fontsize = 14)
-        axes[1, 0].coastlines()
-
-        im2 = axes[1, 1].pcolormesh(ds_orog.lon, ds_orog.lat,
-                                    ds_orog['orog'].where(orog_mask == 1, np.nan), 
-                                    cmap=custom_cmap, 
-                                    vmin = np.nanmin(ds_orog['orog']), 
-                                    vmax = np.nanmax(ds_orog['orog'])
-                                   )
-        fig.colorbar(im2, ax=axes[1, 1], orientation='vertical')
-        elev_lim_min = self.urban_elev_min - self.orog_diff
-        elev_lim_max = self.urban_elev_max + self.orog_diff
-        axes[1, 1].set_title(f'Orography\n(orog_diff = {self.orog_diff};\n{elev_lim_min:.0f} m < orog < {elev_lim_max:.0f} m)', fontsize = 14)
-        axes[1, 1].coastlines()
-
-        im3 = axes[1, 2].pcolormesh(ds_sftlf.lon, ds_sftlf.lat,
-                                    ds_sftlf["sftlf"].where(sftlf_mask == 1, np.nan),
-                                    cmap='winter', 
-                                    vmin = np.nanmin(ds_sftlf["sftlf"]), 
-                                    vmax = np.nanmax(ds_sftlf["sftlf"])
-                                   )
-        fig.colorbar(im3, ax=axes[1, 2], orientation='vertical')
-        axes[1, 2].set_title('Land-sea\n(sftlf_th= 70;\nsftlf >' + str(self.sftlf_th) + '%)', fontsize = 14)
-        axes[1, 2].coastlines()
-
-        if urban_areas:
-            for k in range(3):
-                #plot_urban_borders(urban_areas, axes[1, k])
-                plot_urban_polygon(urban_areas, axes[1, k])
-
-
-        plt.subplots_adjust(wspace=0.1, hspace=0.1)  # Adjust vertical and horizontal space
-        return fig
 
     def netcdf_attrs(self, ds):        
         """
@@ -469,6 +360,134 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
                 ds['urmask'].attrs[attr] = getattr(self, attr)
             
         return ds
+    def plot_static_variables(self,
+                          *,
+                          ds_sfturf, 
+                          ds_orog, 
+                          ds_sftlf,
+                          sfturf_mask, 
+                          orog_mask, 
+                          sftlf_mask, 
+                          urban_areas=None,
+                          ucdb_city=None,
+                          composite=False,
+                          urban_th_plot=10,
+                          ax=None):
+        """
+        Plot static variables: urban fraction, orography, and land-sea mask.
+    
+        Parameters
+        ----------
+        composite : bool, optional
+            If True, plots all layers in a single composite axis. If False, creates 6 subplots.
+        """
+        colors = ['#278908', '#faf998', '#66473b']
+        custom_cmap = LinearSegmentedColormap.from_list("custom_terrain", colors)
+        proj = ccrs.PlateCarree()
+    
+        if composite:
+            if ax is None:
+                fig, ax = plt.subplots(subplot_kw={'projection': proj}, figsize=(16, 10))
+            else:
+                fig = ax.figure
+    
+            orog_data = ds_orog['orog'].where(orog_mask == 1, np.nan)
+            im_orog = ax.pcolormesh(ds_orog.lon, ds_orog.lat, orog_data, cmap=custom_cmap,
+                                    vmin=0, vmax=275, zorder=0, alpha=0.9)
+            
+            urban_data = ds_sfturf[self.urban_var].where(ds_sfturf[self.urban_var] > urban_th_plot, np.nan)
+            im_urb = ax.pcolormesh(ds_sfturf.lon, ds_sfturf.lat, urban_data, cmap='binary',
+                                   vmin=0, vmax=100, zorder=1)
+    
+            sftlf_inverse = np.where(sftlf_mask == 1, np.nan, ds_sftlf["sftlf"])
+            im_landsea = ax.pcolormesh(ds_sftlf.lon, ds_sftlf.lat, sftlf_inverse, cmap='Blues_r',
+                                       vmin=0, vmax=100, zorder=2, alpha=1)
+    
+            if ucdb_city is not None:
+                ucdb_city.plot(ax=ax, facecolor="none", transform=proj, edgecolor="#ff66ff", linewidth=2, zorder=1000)
+    
+            if urban_areas:
+                plot_urban_polygon(urban_areas, ax)
+    
+            ax.coastlines(zorder=1000)
+            elev_lim_min = self.urban_elev_min - self.orog_diff
+            elev_lim_max = self.urban_elev_max + self.orog_diff
+            ax.set_title(
+                f"Orography + Urban + Land-sea\n"
+                f"Orography: {elev_lim_min:.0f}–{elev_lim_max:.0f} m | "
+                f"Urban sfturf > {self.urban_th}, surr. ≤ {self.urban_sur_th} | "
+                f"Land-sea ≤ {self.sftlf_th}%",
+                fontsize=12
+            )
+    
+            return fig
+    
+        else:
+            fig, axes = plt.subplots(2, 3, subplot_kw={'projection': proj}, figsize=(20, 10))
+    
+            im1 = axes[0, 0].pcolormesh(ds_sfturf.lon, ds_sfturf.lat,
+                                        ds_sfturf[self.urban_var],
+                                        cmap='binary',
+                                        vmin=np.nanmin(ds_sfturf[self.urban_var]),
+                                        vmax=np.nanmax(ds_sfturf[self.urban_var]))
+            fig.colorbar(im1, ax=axes[0, 0])
+            axes[0, 0].set_title('Urban Fraction')
+            axes[0, 0].coastlines()
+    
+            im2 = axes[0, 1].pcolormesh(ds_orog.lon, ds_orog.lat,
+                                        ds_orog['orog'],
+                                        cmap=custom_cmap,
+                                        vmin=np.nanmin(ds_orog['orog']),
+                                        vmax=np.nanmax(ds_orog['orog']))
+            fig.colorbar(im2, ax=axes[0, 1])
+            axes[0, 1].set_title('Orography')
+            axes[0, 1].coastlines()
+    
+            im3 = axes[0, 2].pcolormesh(ds_sftlf.lon, ds_sftlf.lat,
+                                        ds_sftlf["sftlf"],
+                                        cmap='winter',
+                                        vmin=np.nanmin(ds_sftlf["sftlf"]),
+                                        vmax=np.nanmax(ds_sftlf["sftlf"]))
+            fig.colorbar(im3, ax=axes[0, 2])
+            axes[0, 2].set_title('Land-sea')
+            axes[0, 2].coastlines()
+    
+            im4 = axes[1, 0].pcolormesh(ds_sfturf.lon, ds_sfturf.lat,
+                                        ds_sfturf[self.urban_var].where(sfturf_mask == 1, np.nan),
+                                        cmap='binary',
+                                        vmin=np.nanmin(ds_sfturf[self.urban_var]),
+                                        vmax=np.nanmax(ds_sfturf[self.urban_var]))
+            fig.colorbar(im4, ax=axes[1, 0])
+            axes[1, 0].set_title(f"Urban Fraction (urb_th > {self.urban_th})" if not urban_areas else
+                                 f"Urban Fraction\n(urb_th = {self.urban_th}, urb_sur_th = {self.urban_sur_th}\nscale = {self.scale}, max_city = {self.min_city_size})")
+            axes[1, 0].coastlines()
+    
+            im5 = axes[1, 1].pcolormesh(ds_orog.lon, ds_orog.lat,
+                                        ds_orog['orog'].where(orog_mask == 1, np.nan),
+                                        cmap=custom_cmap,
+                                        vmin=np.nanmin(ds_orog['orog']),
+                                        vmax=np.nanmax(ds_orog['orog']))
+            fig.colorbar(im5, ax=axes[1, 1])
+            elev_lim_min = self.urban_elev_min - self.orog_diff
+            elev_lim_max = self.urban_elev_max + self.orog_diff
+            axes[1, 1].set_title(f'Orography\n(orog_diff = {self.orog_diff};\n{elev_lim_min:.0f} m < orog < {elev_lim_max:.0f} m)')
+            axes[1, 1].coastlines()
+    
+            im6 = axes[1, 2].pcolormesh(ds_sftlf.lon, ds_sftlf.lat,
+                                        ds_sftlf["sftlf"].where(sftlf_mask == 1, np.nan),
+                                        cmap='winter',
+                                        vmin=np.nanmin(ds_sftlf["sftlf"]),
+                                        vmax=np.nanmax(ds_sftlf["sftlf"]))
+            fig.colorbar(im6, ax=axes[1, 2])
+            axes[1, 2].set_title(f'Land-sea\n(sftlf > {self.sftlf_th}%)')
+            axes[1, 2].coastlines()
+    
+            if urban_areas:
+                for k in range(3):
+                    plot_urban_polygon(urban_areas, axes[1, k])
+    
+            plt.subplots_adjust(wspace=0.1, hspace=0.1)
+            return fig
 
 
     def create_urban_dataset(self,ucdb_city, ds):
