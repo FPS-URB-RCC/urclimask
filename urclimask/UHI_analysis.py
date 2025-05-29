@@ -180,6 +180,7 @@ class UrbanIsland:
         ds_anomaly = None,
         obs_anomaly = None,
         city_name = None,
+        ucdb_city = None, 
         alpha_urb_borders = 1, 
         linewidth_urb_borders = 2, 
         vmax = None,
@@ -191,6 +192,7 @@ class UrbanIsland:
         - ds_anomaly (xarray.DataArray, optional): Spatial anomaly from the model. If not provided, it will be computed.
         - obs_anomaly (numpy.ndarray, optional): Spatial anomaly from the observations. If not provided, it will be computed.
         - city_name (str, optional): Name of the city to include in the plot title.
+        - ucdb_city: GeoDataFrame containing the city's geometry.
         - alpha_urb_borders (float): Transparency level of the urban borders (0 to 1).
         - linewidth_urb_borders (float): Line width of the urban borders.
         - vmax (float, optional): Maximum absolute value for the color scale. If not provided, it is computed from the data.
@@ -236,7 +238,10 @@ class UrbanIsland:
                 edgecolors='gray', 
                 zorder=10000
             )
-        
+
+        if ucdb_city is not None:
+            ucdb_city.plot(ax=ax, facecolor="none", transform=proj, edgecolor="#ff66ff", linewidth=2, zorder=1000)
+
         cbar = fig.colorbar(im1, ax = ax)
         unit = ds_anomaly.attrs.get('units', 'unknown') 
         
@@ -254,7 +259,7 @@ class UrbanIsland:
         *,
         ds_anomaly = None,
         obs_anomaly = None,
-        percentiles = [5],                      
+        percentiles = [5],
         gridcell_series = True, 
         city_name = None, 
         ax = None,            

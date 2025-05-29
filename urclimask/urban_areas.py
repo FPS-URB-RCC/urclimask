@@ -158,8 +158,8 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         # If all objects were removed, select the region closest to the city center
         if np.max(cleaned_mask) == 0:
             # Calculate pixel indices closest to the city center coordinates
-            y_center = np.abs(mask['rlat'].values - self.lat_city).argmin()
-            x_center = np.abs(mask['rlon'].values - self.lon_city).argmin()
+            y_center = np.abs(mask.cf['lat'].values - self.lat_city).argmin()
+            x_center = np.abs(mask.cf['lon'] - self.lon_city).argmin()
             center_pixel = np.array([y_center, x_center])
     
             # Compute distances from each region centroid to the city center
@@ -495,7 +495,7 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         Creates a dataset for urban areas where each cell value represents the percentage of the cell area
         that is within the city limits.
     
-        Parameters:ssh-keygen -f "/home/yaizaquintana/.ssh/known_hosts" -R "ui.sci.unican.es"
+        Parameters:
         ucdb_city: GeoDataFrame containing the city's geometry.
         ds: Dataset from which we are extracting the coordinates.
     
