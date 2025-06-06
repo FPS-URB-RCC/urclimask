@@ -28,7 +28,7 @@ class UrbanVicinity:
         urban_sur_th : float = 0.1,
         orog_diff : float = 100.0,
         sftlf_th : float = 70,
-        scale : float = 2.0, 
+        ratio_r2u : float = 2.0, 
         min_city_size : int = 0, 
         lon_city : float | None = None,
         lat_city : float | None = None,
@@ -51,8 +51,8 @@ Urban surrounding threshold. Cells with urban fraction values below this thresho
 Altitude difference (m) respects the maximum and minimum elevation of the urban cells.
         sftlf_th : float 
             Minimum fraction of land required to include a cell in the analysis
-        scale : float 
-            Ratio between rural surrounding  and urban grid boxes
+        ratio_r2u : float 
+            Ratio between rural surrounding and urban grid boxes
         min_city_size : int
             Remove urban nuclei smaller than the specified size.
         lon_city : float
@@ -75,7 +75,7 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         self.urban_sur_th = urban_sur_th
         self.orog_diff = orog_diff
         self.sftlf_th = sftlf_th
-        self.scale = scale
+        self.ratio_r2u = ratio_r2u
         self.min_city_size = min_city_size
         self.lon_city = lon_city
         self.lat_city = lat_city
@@ -252,7 +252,7 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         orog_mask : xr.DataArray | None = None,
         sftlf_mask : xr.DataArray | None = None,
         sfturf_sur_mask : xr.DataArray | None = None,
-        scale: int | None = None
+        ratio_r2u: int | None = None
     ) -> xr.DataArray:
         """
         Funtion to select a number of non-urban cells based on surrounding urban areas using a dilation operation and excluding large water bodies, mountains and small urban nuclei.
@@ -267,7 +267,7 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
             Binary mask indicating sea areas.
         sfturf_sur_mask : xarray.DataArray 
             Binary mask indicating surroundings of urban areas affected by the urban effect with 1 and 0 for the rest.
-        scale : int 
+        ratio_r2u : int 
             Urban-rural ratio of grid boxes.
     
         Returns
@@ -293,15 +293,15 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
                             [1, 1, 1],
                             [1, 1, 1]])
         
-        if scale is None:
-            scale = self.scale
+        if ratio_r2u is None:
+            ratio_r2u = self.ratio_r2u
         
         data_array = xr.DataArray(sfturf_mask).astype(int)
 
         urban_cells = np.sum(sfturf_mask).values
         non_urban_cells = 0
         counter = 0
-        while non_urban_cells <= urban_cells * scale:
+        while non_urban_cells <= urban_cells * ratio_r2u:
             # Dilation (Try with kernel 1)
             dilated_data = xr.apply_ufunc(dilation, 
                                           data_array if counter == 0 else dilated_data, 
@@ -352,7 +352,7 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         # add attribtes
         ds['urmask'].attrs['long_name'] = 'Urban vs. vicinity. 1 corresponds to urban areas and 0 to the surrounding areas'
         
-        attrs_list = ["urban_th", "urban_sur_th", "orog_diff", "sftlf_th", "sftlf_th", "scale", 
+        attrs_list = ["urban_th", "urban_sur_th", "orog_diff", "sftlf_th", "sftlf_th", "ratio_r2u", 
                       "min_city_size", "lon_city", "lat_city", "lon_lim", "lat_lim", "model", "domain"]
         
         for attr in attrs_list:
@@ -459,7 +459,7 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
                                         vmax=np.nanmax(ds_sfturf[self.urban_var]))
             fig.colorbar(im4, ax=axes[1, 0])
             axes[1, 0].set_title(f"Urban Fraction (urb_th > {self.urban_th})" if not urban_areas else
-                                 f"Urban Fraction\n(urb_th = {self.urban_th}, urb_sur_th = {self.urban_sur_th}\nscale = {self.scale}, max_city = {self.min_city_size})")
+                                 f"Urban Fraction\n(urb_th = {self.urban_th}, urb_sur_th = {self.urban_sur_th}\nratio_r2u = {self.ratio_r2u}, max_city = {self.min_city_size})")
             axes[1, 0].coastlines()
     
             im5 = axes[1, 1].pcolormesh(ds_orog.lon, ds_orog.lat,
