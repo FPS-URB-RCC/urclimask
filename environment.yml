@@ -18,3 +18,4 @@ dependencies:
   - scikit-image
   - netcdf4
   - tqdm
+  - cartopy
