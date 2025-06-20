@@ -1,0 +1,67 @@
+{
+    "creators": [
+        {   
+            "orcid": "0000-0001-9053-2542",
+            "affiliation": "Instituto de Física de Cantabria (IFCA), CSIC-Universidad de Cantabria, Santander, Spain",
+            "name": "Diez-Sierra, Javier"
+        },
+        {   
+            "orcid": "0009-0008-6968-3264",
+            "affiliation": "Instituto de Física de Cantabria (IFCA), CSIC-Universidad de Cantabria, Santander, Spain",
+            "name": "Quintana, Yaiza"
+        },
+        {   
+            "orcid": "0000-0002-0178-7832",
+            "affiliation": "Climate Adaptation and Disaster Risk Department, Deltares, PO Box 177, 2600 MH Delft, the Netherlands",
+            "name": "S. Langendijk, Gaby"
+        },
+        {   
+            "orcid": "0000-0001-5648-5279",
+            "affiliation": "Instituto de Física de Cantabria (IFCA), CSIC-Universidad de Cantabria, Santander, Spain",
+            "name": "Milovac, Josipa"
+        },
+        {   
+            "orcid": "0000-0003-3237-4077",
+            "affiliation": "B-Kode VOF, Ghent, Belgium",
+            "name": "Demuzere, Matthias"
+        },
+        {   
+            "orcid": "0000-0003-1718-542X",
+            "affiliation": "The Institute of Atmospheric Sciences and Climate (CNR-ISAC), Italy; The Abdus Salam International Centre for Theoretical Physics (ICTP), Trieste, Italy",
+            "name": "Nogherotto, Rita"
+        },
+        {   
+            "orcid": "0000-0002-9270-4739",
+            "affiliation": "Climate Service Center Germany (GERICS), Helmholtz-Zentrum Hereon, Fischertwiete 1, 20095 Hamburg, Germany",
+            "name": "Pietikäinen, Joni-Pekka"
+        },
+        {   
+            "orcid": "0000-0002-6035-2935",
+            "affiliation": "Climate Service Center Germany (GERICS), Helmholtz-Zentrum Hereon, Fischertwiete 1, 20095 Hamburg, Germany",
+            "name": "Rechid, Diana"
+        },
+        {   
+            "orcid": "0000-0002-1113-5635",
+            "affiliation": "The Abdus Salam International Centre for Theoretical Physics (ICTP), Trieste, Italy",
+            "name": "Zazulie, Natalia"
+        },
+        {   
+            "orcid": "",
+            "affiliation": "Departamento de Ciencias de la Atmósfera y los Océanos, Facultad de Ciencias Exactas y Naturales, Universidad de Buenos Aires, Centro de Investigaciones del Mar y la Atmósfera, Consejo Nacional de Investigaciones Científicas y Técnicas, Instituto Franco-Argentino de Estudios sobre el Clima y sus Impactos (IRL 3351 IFAECI/CNRS-IRD-UBA), Buenos Aires, Argentina",
+            "name": "A. Solman, Silvina"
+        },
+        {   
+            "orcid": "0000-0002-3483-0008",
+            "affiliation": "Instituto de Física de Cantabria (IFCA), CSIC-Universidad de Cantabria, Santander, Spain",
+            "name": "Fernández, Jesús"
+        },
+   ],    
+
+    "license": "CC-BY-4.0",
+
+    "title": "Code and masks supporting the article -Delineating CORDEX model urban areas and their rural surroundings for megacities worldwide to assess urban climate change-",
+     
+    "description": "<p>This repository includes the 'urclimask' Python package to delineate urban areas and their rural surrounding areas from Regional Climate Models (RCMs). Additionally, it contains the masks used in various international projects such as the CORDEX FPS URB-RCC, the C3S Climate Atlas (https://atlas.climate.copernicus.eu/atlas), among others.</p>",
+
+    "keywords": ["CORDEX", "CORDEX FPS URB-RCC", "C3S Atlas", "Urban climate island", "UHI", "Climate Change", "Urban vs rural"]
+}
