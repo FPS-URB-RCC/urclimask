@@ -18,8 +18,10 @@ def load_ucdb_city(root, city):
     """
     ucdb_info = gpd.read_file(root + '/GHS_FUA_UCD/GHS_STAT_UCDB2015MT_GLOBE_R2019A_V1_2.gpkg')
     ucdb_city = ucdb_info.query(f'UC_NM_MN =="{city}"').to_crs(crs='EPSG:4326')
-    if city == 'London':
+    if city == 'London' or city == 'Birmingham':
         ucdb_city = ucdb_city[ucdb_city['CTR_MN_NM'] == 'United Kingdom']
+    if city == 'Riga':
+        ucdb_city = ucdb_city[ucdb_city['CTR_MN_NM'] == 'Latvia']
     if city == 'Santiago':
         ucdb_city = ucdb_city[ucdb_city['CTR_MN_NM'] == 'Chile']
     if city == 'Barcelona':
@@ -101,6 +103,8 @@ def fix_360_longitudes(
 
 def plot_urban_polygon(ds, ax):
     '''
+    Plots urban and non-urban polygons from a mask dataset on the given axis.
+    Returns GeoDataFrames for urban and non-urban areas.
     '''
     # Assume the mask is in the 'urmask' variable
     mask = ds['urmask']
@@ -163,6 +167,9 @@ def plot_urban_polygon(ds, ax):
     gdf_urban.boundary.plot(ax=ax,  color='#A52A2A', zorder=100, linewidth=2)
 
     return(gdf_urban, gdf_non_urban)
+
+
+
 
 def plot_urban_borders(ds, ax, alpha = 1, linewidth = 2):
     """
@@ -248,9 +255,9 @@ def plot_urban_borders(ds, ax, alpha = 1, linewidth = 2):
     lats = lats - abs(lat2d[-1, -1] - lat2d[-1, -1])/2 - dist_lat/2  
     
     if data_cell == 1:
-        ax.plot(lons, lats, color='red', zorder=100, linewidth=2)
+        ax.plot(lons, lats, color='#8A8D28', zorder=100, linewidth=2)
     elif data_cell == 0:
-        ax.plot(lons, lats, color='b', zorder=1, linewidth=2)
+        ax.plot(lons, lats, color='#A52A2A', zorder=1, linewidth=2)
 
 
         

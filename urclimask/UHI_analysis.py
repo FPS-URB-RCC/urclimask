@@ -89,7 +89,7 @@ class UrbanIsland:
             .compute()
         )       
         ds_period_mean = self.ds.groupby('time.month').mean('time')                  
-        ds_anomaly = ds_period_mean - rural_mean
+        ds_anomaly = (ds_period_mean - rural_mean).compute()
         ds_anomaly.attrs['units'] = self.ds.attrs.get('units', 'unknown')
 
         # calculate climatology from the observations
@@ -133,7 +133,8 @@ class UrbanIsland:
     
         is_rural = self.urban_vicinity['urmask'] == 0
         is_urban = self.urban_vicinity['urmask'] == 1
-    
+        rounded_time = data_ds.time.dt.round('h')
+        ds_var = ds_var.assign_coords(hour=rounded_time.dt.hour)
         rural_mean = (
             ds_var
             .where(is_rural)
@@ -144,7 +145,7 @@ class UrbanIsland:
     
         ds_period_mean = ds_var.groupby('time.hour').mean('time')
     
-        ds_anomaly = ds_period_mean - rural_mean
+        ds_anomaly = (ds_period_mean - rural_mean).compute()
         ds_anomaly.attrs['units'] = ds_var.attrs.get('units', 'unknown')
     
         obs_anomaly = None
@@ -160,8 +161,8 @@ class UrbanIsland:
             obs_hour_mean['urban_mean'] = obs_hour[codes_ins_city].mean(axis=1).values
     
             obs_anomaly = obs_hour_mean.sub(obs_hour_mean['rural_mean'], axis=0)
-            raw_anomaly = obs_month.sub(obs_month_mean['rural_mean'], axis=0)
-            for code in obs_month.columns:
+            raw_anomaly = obs_day.sub(obs_day_mean['rural_mean'], axis=0)
+            for code in obs_day.columns:
                 obs_anomaly[code] = raw_anomaly[code]
     
         if self.anomaly == 'rel':
@@ -369,133 +370,132 @@ class UrbanIsland:
       
         return fig
 
-        def plot_daily_cycle(
-            self,
-            *,
-            ds_anomaly = None,
-            obs_anomaly = None,
-            percentiles = [5],                      
-            gridcell_series = True, 
-            city_name = None, 
-            ax = None,            
-            vmax = None, 
-            vmin = None):
-            '''
-            Plots the daily cycle of a variable, with optional anomalies, urban/rural differentiation, and observational overlays.
-            
-            Parameters:
-            - ds_anomaly (xarray.DataArray, optional): Daily anomaly from the model. If not provided, it will be computed.
-            - obs_anomaly (pandas.DataFrame, optional): Daily anomaly from observations. If not provided, it will be computed.
-            - percentiles (list of int): Percentiles to shade around the mean values (e.g., [5] for 5th–95th range).
-            - gridcell_series (bool): Whether to plot individual grid cell time series as transparent lines.
-            - city_name (str, optional): Name of the city to include in the plot title.
-            - ax (matplotlib.axes.Axes, optional): Existing axis to plot on. If None, a new figure and axis are created.
-            - vmax (float, optional): Upper limit for the y-axis.
-            - vmin (float, optional): Lower limit for the y-axis.
-            
-            Outputs:
-            - fig (matplotlib.figure.Figure): The resulting figure object.
-            '''
-            if ds_anomaly is None:
-                if not hasattr(self, 'ds_annual_cycle'):
-                    self.compute_annual_cycle()
-                ds_anomaly = self.ds_annual_cycle
-            
-            is_rural = self.urban_vicinity['urmask'] == 0
-            is_urban = self.urban_vicinity['urmask'] == 1
-    
-            rural_anomaly = ds_anomaly.where(is_rural)
-            urban_anomaly = ds_anomaly.where(is_urban)
+    def plot_daily_cycle(
+        self,
+        *,
+        ds_anomaly = None,
+        obs_anomaly = None,
+        percentiles = [5],                      
+        gridcell_series = True, 
+        city_name = None, 
+        ax = None,            
+        vmax = None, 
+        vmin = None):
+        '''
+        Plots the daily cycle of a variable, with optional anomalies, urban/rural differentiation, and observational overlays.
         
-            urban_mean = urban_anomaly.mean(dim = [ds_anomaly.cf['Y'].name, ds_anomaly.cf['X'].name]).compute()
-            rural_mean = rural_anomaly.mean(dim = [ds_anomaly.cf['Y'].name, ds_anomaly.cf['X'].name]).compute()
-    
-            urban_area_legend = False
-            not_urban_area_legend = False
+        Parameters:
+        - ds_anomaly (xarray.DataArray, optional): Daily anomaly from the model. If not provided, it will be computed.
+        - obs_anomaly (pandas.DataFrame, optional): Daily anomaly from observations. If not provided, it will be computed.
+        - percentiles (list of int): Percentiles to shade around the mean values (e.g., [5] for 5th–95th range).
+        - gridcell_series (bool): Whether to plot individual grid cell time series as transparent lines.
+        - city_name (str, optional): Name of the city to include in the plot title.
+        - ax (matplotlib.axes.Axes, optional): Existing axis to plot on. If None, a new figure and axis are created.
+        - vmax (float, optional): Upper limit for the y-axis.
+        - vmin (float, optional): Lower limit for the y-axis.
         
-            fig, ax = plt.subplots(figsize=(15, 7))
+        Outputs:
+        - fig (matplotlib.figure.Figure): The resulting figure object.
+        '''
+        if ds_anomaly is None:
+            if not hasattr(self, 'ds_daily_cycle'):
+                self.compute_daily_cycle()
+            ds_anomaly = self.ds_daily_cycle
+        
+        is_rural = self.urban_vicinity['urmask'] == 0
+        is_urban = self.urban_vicinity['urmask'] == 1
+
+        rural_anomaly = ds_anomaly.where(is_rural)
+        urban_anomaly = ds_anomaly.where(is_urban)
     
-            (urban_mean).plot(ax=ax,  color = '#A52A2A', linestyle='-', 
-                                             linewidth = 4, label='Urban mean')
-                                 
-            (rural_mean-rural_mean).plot(ax=ax,  color = '#8A8D28', linestyle='-', 
-                                         linewidth = 4, label='Vicinity mean')
+        urban_mean = urban_anomaly.mean(dim = [ds_anomaly.cf['Y'].name, ds_anomaly.cf['X'].name]).compute()
+        rural_mean = rural_anomaly.mean(dim = [ds_anomaly.cf['Y'].name, ds_anomaly.cf['X'].name]).compute()
+
+        urban_area_legend = False
+        not_urban_area_legend = False
     
-            
-            # Plot individual data squares for urban and rural areas if requested
-            if percentiles:
-                # Fill within percentiles
-                axis = [rural_anomaly.get_axis_num(rural_anomaly.cf['X'].name),
-                        rural_anomaly.get_axis_num(rural_anomaly.cf['Y'].name)]
-                colors = ['#8A8D28', '#A52A2A']
-                for index, anom in enumerate([ rural_anomaly, urban_anomaly]):
-                    for percentile in percentiles:
-                        lower_percentile = np.nanpercentile(anom, percentile, axis=axis)
-                        upper_percentile = np.nanpercentile(anom, 100-percentile, axis=axis)
-                        ax.fill_between(
-                            rural_anomaly['month'],
-                            lower_percentile, upper_percentile,
-                            color=colors[index], alpha=0.1, linewidth=1, linestyle = '--',
-                        )
-            
-                        # Plot the lower percentile line
-                        ax.plot(
-                            rural_anomaly['month'], lower_percentile,
-                            color=colors[index], alpha=0.5, linewidth=1, linestyle='--', label=f'{percentile} to {100-percentile} Percentile')
-                        # Plot the upper percentile line
-                        ax.plot(
-                            rural_anomaly['month'], upper_percentile,
-                            color=colors[index], alpha=0.5, linewidth=1, linestyle='--')
-                    for i, j in product(anom.cf['X'].values, anom.cf['Y'].values):
-                        anom_val = anom.sel({ds_anomaly.cf['X'].name:i,
-                                             ds_anomaly.cf['Y'].name:j})
-                        if not np.isnan(anom_val[0]):
-                            anom_val.plot(ax=ax, color=colors[index], linewidth=0.1, alpha = 0.1)
-    
-            # Plot observations if requested
-            if not self.obs_attr.empty:
-                if not hasattr(self, 'obs_daily_cycle'):
-                    self.compute_daily_cycle() 
-                obs_anomaly = self.obs_annual_cycle
-                codes_ins_city = self.obs_attr.code[self.obs_attr['inside_city'] == True]
-                codes_out_city = self.obs_attr.code[self.obs_attr['inside_city'] == False]
-                obs_anomaly[codes_ins_city].plot(ax = ax, marker='o', color = 'k', 
-                                                         linestyle='--', linewidth = 2)
-                obs_anomaly[codes_out_city].plot(ax = ax, marker='o', color = 'g', 
-                                                         linestyle='--', linewidth = 2)
-                obs_anomaly[codes_ins_city].mean(axis = 0).values.plot(ax = ax, color='k', linestyle='-', 
-                                                             linewidth = 4, label='Urban obs. mean', 
-                                                             zorder = 2000) 
-    
-                self.obs_anomaly[codes_out_city].mean(axis = 0).plot(ax = ax, color='g', linestyle='-', 
-                                                             linewidth = 4, label='Vicinity obs. mean', 
-                                                             zorder = 2000)
-            if not isinstance(valid_stations, list):
-                codes_city = valid_stations.code[valid_stations['city'] == city]
-                time_series_hour = time_series.groupby(time_series.index.hour).mean()
-                time_series_hour_mean = pd.DataFrame(index=time_series_hour.index)
-                time_series_hour_mean['urban_mean'] = time_series_hour[codes_city].mean(axis=1).values
-                time_series_anomaly = time_series_hour.sub(time_series_hour_mean['urban_mean'], axis=0)
-            
-                time_series_anomaly[codes_city].plot(ax=ax, marker='o', color='k', 
-                                                     linestyle='--', linewidth=2)
-            
-                time_series_hour_mean['urban_mean'].plot(ax=ax, color='k', linestyle='-', 
-                                                         linewidth=4, label='Urban obs. mean', 
-                                                         zorder=2000)
-            
-            ax.set_xticks(np.arange(0, 24))
-            ax.set_xticklabels([f'{h}' for h in range(24)], fontsize=12)
-            ax.tick_params(axis='y', labelsize=18)
-            if vmax is not None and vmin is not None:
-                ax.set_ylim(vmin, vmax)
-    
-            # Add legend to the plot
-            ax.legend(fontsize = 14, loc='center left', bbox_to_anchor=(0, -0.2), prop={'size': 14})
-    
-            ax.set_title(f"Urban Island for {city_name} (variable: {ds_anomaly.name})", fontsize=18)
-    
-            unit = ds_anomaly.attrs.get('units', 'unknown')         
-            ax.set_ylabel(f"{unit}")
-          
-            return fig
+        fig, ax = plt.subplots(figsize=(15, 7))
+
+        (urban_mean).plot(ax=ax,  color = '#A52A2A', linestyle='-', 
+                                         linewidth = 4, label='Urban mean')
+                             
+        (rural_mean-rural_mean).plot(ax=ax,  color = '#8A8D28', linestyle='-', 
+                                     linewidth = 4, label='Vicinity mean')
+
+        
+        # Plot individual data squares for urban and rural areas if requested
+        if percentiles:
+            # Fill within percentiles
+            axis = [rural_anomaly.get_axis_num(rural_anomaly.cf['X'].name),
+                    rural_anomaly.get_axis_num(rural_anomaly.cf['Y'].name)]
+            colors = ['#8A8D28', '#A52A2A']
+            for index, anom in enumerate([ rural_anomaly, urban_anomaly]):
+                for percentile in percentiles:
+                    lower_percentile = np.nanpercentile(anom, percentile, axis=axis)
+                    upper_percentile = np.nanpercentile(anom, 100-percentile, axis=axis)
+                    ax.fill_between(
+                        rural_anomaly['hour'],
+                        lower_percentile, upper_percentile,
+                        color=colors[index], alpha=0.1, linewidth=1, linestyle = '--',
+                    )
+        
+                    # Plot the lower percentile line
+                    ax.plot(
+                        rural_anomaly['hour'], lower_percentile,
+                        color=colors[index], alpha=0.5, linewidth=1, linestyle='--', label=f'{percentile} to {100-percentile} Percentile')
+                    # Plot the upper percentile line
+                    ax.plot(
+                        rural_anomaly['hour'], upper_percentile,
+                        color=colors[index], alpha=0.5, linewidth=1, linestyle='--')
+                for i, j in product(anom.cf['X'].values, anom.cf['Y'].values):
+                    anom_val = anom.sel({ds_anomaly.cf['X'].name:i,
+                                         ds_anomaly.cf['Y'].name:j})
+                    if not np.isnan(anom_val[0]):
+                        anom_val.plot(ax=ax, color=colors[index], linewidth=0.1, alpha = 0.1)
+
+        # Plot observations if requested
+        if not self.obs_attr.empty:
+            if not hasattr(self, 'obs_daily_cycle'):
+                self.compute_daily_cycle() 
+            obs_anomaly = self.obs_daily_cycle
+            codes_ins_city = self.obs_attr.code[self.obs_attr['inside_city'] == True]
+            codes_out_city = self.obs_attr.code[self.obs_attr['inside_city'] == False]
+            obs_anomaly[codes_ins_city].plot(ax = ax, marker='o', color = 'k', 
+                                                     linestyle='--', linewidth = 2)
+            obs_anomaly[codes_out_city].plot(ax = ax, marker='o', color = 'g', 
+                                                     linestyle='--', linewidth = 2)
+            obs_anomaly[codes_ins_city].mean(axis = 0).values.plot(ax = ax, color='k', linestyle='-', 
+                                                         linewidth = 4, label='Urban obs. mean', 
+                                                         zorder = 2000) 
+
+            self.obs_anomaly[codes_out_city].mean(axis = 0).plot(ax = ax, color='g', linestyle='-', 
+                                                         linewidth = 4, label='Vicinity obs. mean', 
+                                                         zorder = 2000)
+            codes_city = valid_stations.code[valid_stations['city'] == city]
+            time_series_hour = time_series.groupby(time_series.index.hour).mean()
+            time_series_hour_mean = pd.DataFrame(index=time_series_hour.index)
+            time_series_hour_mean['urban_mean'] = time_series_hour[codes_city].mean(axis=1).values
+            time_series_anomaly = time_series_hour.sub(time_series_hour_mean['urban_mean'], axis=0)
+        
+            time_series_anomaly[codes_city].plot(ax=ax, marker='o', color='k', 
+                                                 linestyle='--', linewidth=2)
+        
+            time_series_hour_mean['urban_mean'].plot(ax=ax, color='k', linestyle='-', 
+                                                     linewidth=4, label='Urban obs. mean', 
+                                                     zorder=2000)
+        
+        ax.set_xticks(np.arange(0, 24))
+        ax.set_xticklabels([f'{h}' for h in range(24)], fontsize=12)
+        ax.tick_params(axis='y', labelsize=18)
+        if vmax is not None and vmin is not None:
+            ax.set_ylim(vmin, vmax)
+
+        # Add legend to the plot
+        ax.legend(fontsize = 14, loc='center left', bbox_to_anchor=(0, -0.2), prop={'size': 14})
+
+        ax.set_title(f"Urban Island for {city_name} (variable: {ds_anomaly.name})", fontsize=18)
+
+        unit = ds_anomaly.attrs.get('units', 'unknown')         
+        ax.set_ylabel(f"{unit}")
+      
+        return fig
