@@ -1,3 +1,4 @@
+
 import cartopy.crs as ccrs
 import dask
 import pandas as pd
@@ -114,10 +115,18 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         [ilat], [ilon] = np.where(dist == np.min(dist))
         if ds.lon.ndim == 2:
         # crop area
-            ds = ds.isel(**{
-            ds.cf['Y'].name: slice(ilat-dlat,ilat+dlat),
-            ds.cf['X'].name : slice(ilon-dlon,ilon+dlon)
-            })   
+            try:
+                ds = ds.isel(**{
+                    ds.cf['Y'].name: slice(ilat - dlat, ilat + dlat),
+                    ds.cf['X'].name: slice(ilon - dlon, ilon + dlon)
+                })
+            except (KeyError, ValueError):
+                # Fallback directo si cf_xarray no reconoce 'X' y 'Y'
+                ds = ds.isel(
+                    y=slice(ilat - dlat, ilat + dlat),
+                    x=slice(ilon - dlon, ilon + dlon)
+            )
+         
         else:
          		# Crop the area for the city using the domain resolution
             # Define trimming limits
