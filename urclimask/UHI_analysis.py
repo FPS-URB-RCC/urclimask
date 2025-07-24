@@ -133,7 +133,7 @@ class UrbanIsland:
     
         is_rural = self.urban_vicinity['urmask'] == 0
         is_urban = self.urban_vicinity['urmask'] == 1
-        rounded_time = data_ds.time.dt.round('h')
+        rounded_time = ds_var.time.dt.round('h')
         ds_var = ds_var.assign_coords(hour=rounded_time.dt.hour)
         rural_mean = (
             ds_var
