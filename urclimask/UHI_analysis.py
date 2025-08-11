@@ -14,6 +14,7 @@ class UrbanIsland:
         *,
         ds = None, 
         urban_vicinity = None, 
+        rcm = None,
         anomaly = 'abs',
         period= 'Annual',
         obs_attributes = pd.DataFrame(), 
@@ -30,6 +31,7 @@ class UrbanIsland:
         """       
         self.ds = ds
         self.urban_vicinity = urban_vicinity
+        self.rcm = rcm
         self.anomaly = anomaly
         self.period = period
         self.obs_attr = obs_attributes
@@ -154,15 +156,15 @@ class UrbanIsland:
             codes_ins_city = self.obs_attr.code[self.obs_attr['inside_city'] == True]
             codes_out_city = self.obs_attr.code[self.obs_attr['inside_city'] == False]
     
-            obs_hour = self.obs_timeseries.groupby(self.obs_timeseries.index.hour).mean()
+            obs_hour = self.obs_time.groupby(self.obs_time.index.hour).mean()
     
             obs_hour_mean = pd.DataFrame(index=obs_hour.index)
             obs_hour_mean['rural_mean'] = obs_hour[codes_out_city].mean(axis=1).values
             obs_hour_mean['urban_mean'] = obs_hour[codes_ins_city].mean(axis=1).values
     
             obs_anomaly = obs_hour_mean.sub(obs_hour_mean['rural_mean'], axis=0)
-            raw_anomaly = obs_day.sub(obs_day_mean['rural_mean'], axis=0)
-            for code in obs_day.columns:
+            raw_anomaly = obs_hour.sub(obs_hour_mean['rural_mean'], axis=0)
+            for code in obs_hour.columns:
                 obs_anomaly[code] = raw_anomaly[code]
     
         if self.anomaly == 'rel':
@@ -181,6 +183,7 @@ class UrbanIsland:
         ds_anomaly = None,
         obs_anomaly = None,
         city_name = None,
+        ucdb_city = None, 
         alpha_urb_borders = 1, 
         linewidth_urb_borders = 2, 
         vmax = None,
@@ -192,6 +195,7 @@ class UrbanIsland:
         - ds_anomaly (xarray.DataArray, optional): Spatial anomaly from the model. If not provided, it will be computed.
         - obs_anomaly (numpy.ndarray, optional): Spatial anomaly from the observations. If not provided, it will be computed.
         - city_name (str, optional): Name of the city to include in the plot title.
+        - ucdb_city: GeoDataFrame containing the city's geometry.
         - alpha_urb_borders (float): Transparency level of the urban borders (0 to 1).
         - linewidth_urb_borders (float): Line width of the urban borders.
         - vmax (float, optional): Maximum absolute value for the color scale. If not provided, it is computed from the data.
@@ -237,12 +241,19 @@ class UrbanIsland:
                 edgecolors='gray', 
                 zorder=10000
             )
-        
+
+        if ucdb_city is not None:
+            ucdb_city.plot(ax=ax, facecolor="none", transform=proj, edgecolor="#ff66ff", linewidth=2, zorder=1000)
+
         cbar = fig.colorbar(im1, ax = ax)
         unit = ds_anomaly.attrs.get('units', 'unknown') 
         
         cbar.set_label(f"{unit}", rotation = 90, fontsize = 14)
-        ax.set_title(f"Urban Island for {city_name} (variable: {ds_anomaly.name})", fontsize=18)
+        
+        if self.rcm:
+            ax.set_title(f"Urban Island for {city_name} (variable: {ds_anomaly.name}, rcm: {self.rcm})", fontsize=18)
+        else:
+            ax.set_title(f"Urban Island for {city_name} (variable: {ds_anomaly.name})", fontsize=18)     
 
         ax.coastlines()
         plot_urban_polygon(self.urban_vicinity, ax)
@@ -255,7 +266,7 @@ class UrbanIsland:
         *,
         ds_anomaly = None,
         obs_anomaly = None,
-        percentiles = [5],                      
+        percentiles = [5],
         gridcell_series = True, 
         city_name = None, 
         ax = None,            
@@ -340,16 +351,16 @@ class UrbanIsland:
             obs_anomaly = self.obs_annual_cycle
             codes_ins_city = self.obs_attr.code[self.obs_attr['inside_city'] == True]
             codes_out_city = self.obs_attr.code[self.obs_attr['inside_city'] == False]
-            obs_anomaly[codes_ins_city].plot(ax = ax, marker='o', color = 'k', 
-                                                     linestyle='--', linewidth = 2)
+            obs_anomaly[codes_ins_city].plot(ax = ax, marker='o', color = '#A52A2A', 
+                                                     linestyle='--', linewidth = 1)
             obs_anomaly[codes_out_city].plot(ax = ax, marker='o', color = 'g', 
-                                                     linestyle='--', linewidth = 2)
-            obs_anomaly['urban_mean'].plot(ax = ax, color='k', linestyle='-', 
-                                                         linewidth = 4, label='Urban obs. mean', 
+                                                     linestyle='--', linewidth = 1)
+            obs_anomaly['urban_mean'].plot(ax = ax, color= 'k', linestyle='--', marker='o',
+                                                         linewidth = 4, label='Urban mean (obs.)', 
                                                          zorder = 2000) 
 
-            obs_anomaly['rural_mean'].plot(ax = ax, color='g', linestyle='-', 
-                                                         linewidth = 4, label='Vicinity obs. mean', 
+            obs_anomaly['rural_mean'].plot(ax = ax, color='g', linestyle='--', marker='o',
+                                                         linewidth = 4, label='Vicinity mean (obs.)', 
                                                          zorder = 2000)
                 
             
@@ -361,9 +372,12 @@ class UrbanIsland:
             ax.set_ylim(vmin, vmax)
 
         # Add legend to the plot
-        ax.legend(fontsize = 14, loc='center left', bbox_to_anchor=(0, -0.2), prop={'size': 14})
+        #ax.legend(fontsize = 14, loc='center left', bbox_to_anchor=(0, -0.2), prop={'size': 14})
 
-        ax.set_title(f"Urban Island for {city_name} (variable: {ds_anomaly.name})", fontsize=18)
+        if self.rcm:
+            ax.set_title(f"Urban Island for {city_name} (variable: {ds_anomaly.name}, rcm: {self.rcm})", fontsize=18)
+        else:
+            ax.set_title(f"Urban Island for {city_name} (variable: {ds_anomaly.name})", fontsize=18)    
 
         unit = ds_anomaly.attrs.get('units', 'unknown')         
         ax.set_ylabel(f"{unit}")
@@ -464,25 +478,14 @@ class UrbanIsland:
                                                      linestyle='--', linewidth = 2)
             obs_anomaly[codes_out_city].plot(ax = ax, marker='o', color = 'g', 
                                                      linestyle='--', linewidth = 2)
-            obs_anomaly[codes_ins_city].mean(axis = 0).values.plot(ax = ax, color='k', linestyle='-', 
-                                                         linewidth = 4, label='Urban obs. mean', 
+            obs_anomaly['urban_mean'].plot(ax = ax, color= 'k', linestyle='--', marker='o',
+                                                         linewidth = 4, label='Urban mean (obs.)', 
                                                          zorder = 2000) 
 
-            self.obs_anomaly[codes_out_city].mean(axis = 0).plot(ax = ax, color='g', linestyle='-', 
-                                                         linewidth = 4, label='Vicinity obs. mean', 
+            obs_anomaly['rural_mean'].plot(ax = ax, color='g', linestyle='--', marker='o',
+                                                         linewidth = 4, label='Vicinity mean (obs.)', 
                                                          zorder = 2000)
-            codes_city = valid_stations.code[valid_stations['city'] == city]
-            time_series_hour = time_series.groupby(time_series.index.hour).mean()
-            time_series_hour_mean = pd.DataFrame(index=time_series_hour.index)
-            time_series_hour_mean['urban_mean'] = time_series_hour[codes_city].mean(axis=1).values
-            time_series_anomaly = time_series_hour.sub(time_series_hour_mean['urban_mean'], axis=0)
-        
-            time_series_anomaly[codes_city].plot(ax=ax, marker='o', color='k', 
-                                                 linestyle='--', linewidth=2)
-        
-            time_series_hour_mean['urban_mean'].plot(ax=ax, color='k', linestyle='-', 
-                                                     linewidth=4, label='Urban obs. mean', 
-                                                     zorder=2000)
+
         
         ax.set_xticks(np.arange(0, 24))
         ax.set_xticklabels([f'{h}' for h in range(24)], fontsize=12)
