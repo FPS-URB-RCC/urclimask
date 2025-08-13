@@ -92,7 +92,9 @@ def get_valid_timeseries(city, stations, ds_var, series = None, variable = 'tasm
             continue
         availvars = available_vars(stn_data)
         if var in availvars:
+
             valid_records = stn_data[var].loc[period].notna().sum()/ndays
+
             if valid_records > valid_threshold:
                 print(f'{city} -- {stn_data.NAME[0]} - {var} has {100*valid_records:.1f}% valid records in {idate} to {fdate}')
                 valid_codes.append(stn_code)
