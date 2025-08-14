@@ -237,9 +237,9 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         # orog
         urban_elev_max = ds_orog["orog"].where(sfturf_mask).max().item()
         urban_elev_min = ds_orog["orog"].where(sfturf_mask).min().item()
-        orog_mask1 = ds_orog["orog"] < (self.orog_diff + urban_elev_max)
-        orog_mask2 = ds_orog["orog"] > (urban_elev_min - self.orog_diff)
-        orog_mask = orog_mask1 & orog_mask2
+        #orog_mask1 = ds_orog["orog"] < (self.orog_diff + urban_elev_max)
+        #orog_mask2 = ds_orog["orog"] > (urban_elev_min - self.orog_diff)
+        #orog_mask = orog_mask1 & orog_mask2
         
         #sftlf
         sftlf_mask = ds_sftlf["sftlf"] > self.sftlf_th   
@@ -247,7 +247,20 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         # Apply orog and sftlf thresholds to the urban_mask
         sfturf_mask = sfturf_mask*sftlf_mask
         sfturf_sur_mask = sfturf_sur_mask*sftlf_mask
-
+        
+        # New implementation for the orography mask: if the elevation difference between the upper and lower cells in urban areas 
+        # is greater than `orog_diff`, the function uses this difference instead of the hyperparameter defined by the user (orog_diff). 
+        # This resolves cases in which the threshold is too restrictive (e.g., cities with a higher elevation difference inside 
+        # than outside the city).
+        disliv=urban_elev_max-urban_elev_min
+        if disliv < self.orog_diff: # This condition includes those cases in which the urban areas is defined by a single point
+            disliv = self.orog_diff
+        upper_thresh = urban_elev_max + disliv 
+        lower_thresh = urban_elev_min - disliv 
+        orog_mask1 = ds_orog["orog"] < upper_thresh
+        orog_mask2 = ds_orog["orog"] > lower_thresh
+        orog_mask = orog_mask1 & orog_mask2
+            
         self.urban_elev_min = urban_elev_min 
         self.urban_elev_max = urban_elev_max 
     
