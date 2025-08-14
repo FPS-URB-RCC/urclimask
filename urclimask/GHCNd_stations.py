@@ -22,7 +22,6 @@ def load_ghcnd_stations(lon, lat, radious = 0.5):
     gpd.GeoDataFrame: Geospatial DataFrame of nearby GHCND stations.
     '''
     ghcnd_stations_url = 'https://www.ncei.noaa.gov/data/global-historical-climatology-network-daily/doc/ghcnd-stations.txt'
-    ghcnd_stations_url = '/lustre/gmeteo/WORK/diezsj/research/cordex-fps-urb-rcc/old/CORDEX-CORE_WG_delete/ghcnd-stations.txt'
     ghcnd_stations_column_names = ['code', 'lat', 'lon', 'elev', 'name', 'net', 'numcode']
     ghcnd_stations_column_widths = [   11,     9,    10,      7,     34,     4,       10 ]
     df = pd.read_fwf(ghcnd_stations_url, header = 0, widths = ghcnd_stations_column_widths, names = ghcnd_stations_column_names)
@@ -42,7 +41,7 @@ def get_ghcnd_df(code):
     Returns:
     pd.DataFrame: DataFrame containing the GHCND data for the specified station.
     '''
-    baseurl = '/lustre/gmeteo/WORK/WWW/chus/ghcnd/data'
+    baseurl = '/lustre/gmeteo/WORK/WWW/chus/ghcnd/data'# GHCNd series
     try:
         # Attempt to load the compressed file from the original location
         rval = pd.read_csv(f'{baseurl}/{code[0]}/{code}.csv.gz',
@@ -51,31 +50,22 @@ def get_ghcnd_df(code):
                            parse_dates=True,
                            low_memory=False  # Avoid warnings for mixed data types in some columns
                            )
-    except:
-       try:
-            # Load the combined_temp_data.csv file
-            file_path = '/lustre/gmeteo/WORK/quintanay/CORDEX-CORE-WG/uhi/PARIS_surface_weather_data/combined_temp_data.csv'
-            combined_data = pd.read_csv(file_path)
 
-            # Filter the data by the station code
-            rval = combined_data[combined_data['code'] == int(code)]
-            rval = rval.set_index('DATE')
-
-            # Raise an error if no data is found for the station code
-       except Exception as e:
-            # Handle any errors during the second attempt
-            print(f"Error loading data for {code}: {e}")
-            rval = pd.DataFrame()  # Return an empty DataFrame if everything fails
+    except Exception as e:
+        # Handle any errors during the second attempt
+        print(f"Error loading data for {code}: {e}")
+        rval = pd.DataFrame()  # Return an empty DataFrame if everything fails
 
     return rval
 
-def get_valid_timeseries(city, stations, ds_var, variable = 'tasmin', valid_threshold=0.8, idate='1979-01-01', fdate='2014-12-31',var_map=var_map, divide=10.0):
+def get_valid_timeseries(city, stations, ds_var, series = None, variable = 'tasmin', valid_threshold=0.8, idate='1979-01-01', fdate='2014-12-31',var_map=var_map, divide=10.0):
     '''
     Retrieves valid time series data for a specific variable from GHCND stations for a given city.
 
     Parameters:
     city (str): The name of the city for which the data is to be retrieved.
     stations (GeoDataFrame): A GeoDataFrame containing station metadata.
+    series (DataFrame): Time series from other source different than GHCNd
     var (str): The variable of interest (default is 'PRCP' for precipitation).
     valid_threshold (float): The threshold proportion of valid records required (default is 0.8).
     idate (str): The start date for the period of interest (default is '1979-01-01').
@@ -94,7 +84,10 @@ def get_valid_timeseries(city, stations, ds_var, variable = 'tasmin', valid_thre
     ndays = (pd.to_datetime(fdate)-pd.to_datetime(idate)).days
     valid_codes, valid_time_series = [], []
     for stn_code in stations.code:
-        stn_data = get_ghcnd_df(stn_code)
+        if series is None:
+            stn_data = get_ghcnd_df(stn_code)
+        elif isinstance(series, pd.DataFrame):
+            stn_data = series[series['code'] == int(stn_code)]
         if stn_data.empty:
             continue
         availvars = available_vars(stn_data)

@@ -33,10 +33,10 @@ def load_ucdb_city(root, city):
     return ucdb_city
 
 
-def traverseDir(root):
+def traverseDir(root, end):
     for (dirpath, dirnames, filenames) in os.walk(root):
         for file in filenames:
-            if file.endswith(('.nc')):
+            if file.endswith((end)):
                 yield os.path.join(dirpath, file)
 
 def fix_360_longitudes(

@@ -355,11 +355,12 @@ class UrbanIsland:
                                                      linestyle='--', linewidth = 1)
             obs_anomaly[codes_out_city].plot(ax = ax, marker='o', color = 'g', 
                                                      linestyle='--', linewidth = 1)
-            obs_anomaly['urban_mean'].plot(ax = ax, color= 'k', linestyle='--', marker='o',
+
+            obs_anomaly['urban_mean'].plot(ax = ax, color='#A52A2A', linestyle='--', marker='o',
                                                          linewidth = 4, label='Urban mean (obs.)', 
                                                          zorder = 2000) 
 
-            obs_anomaly['rural_mean'].plot(ax = ax, color='g', linestyle='--', marker='o',
+            obs_anomaly['rural_mean'].plot(ax = ax, color='#8A8D28', linestyle='--', marker='o',
                                                          linewidth = 4, label='Vicinity mean (obs.)', 
                                                          zorder = 2000)
                 

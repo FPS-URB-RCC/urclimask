@@ -12,8 +12,10 @@ Figure: Urban Heat Island (UHI) for London using two Regional Climate Models. Re
 | :-------- | :------- |
 |  [urclimask](https://github.com/FPS-URB-RCC/urclimask/tree/main/urclimask) | Python code to delineate urban/rural mask and assees Urban Heat Island analysys.
 |  [notebooks](https://github.com/FPS-URB-RCC/urclimask/tree/main/notebooks) | Jupyter notebooks with examples on how to use the library for fiffenre RCMs and cities.
-|  [CORDEX-CORE-WG](https://github.com/FPS-URB-RCC/urclimask/tree/main/CORDEX-CORE-WG) | Notebooks and resources used to generate the urban/rural mask database from CORDEX-CORE and CORDEX-EUR-11 within the framework of the CORDEX Flagship Pilot Study (FPS) on Urban Environments and Regional Climate Change (URB-RCC).
+|  [CORDEX-CORE](https://github.com/FPS-URB-RCC/urclimask/tree/main/CORDEX-CORE) | Notebooks and resources used to generate the urban/rural mask database from CORDEX-CORE and CORDEX-EUR-11 within the framework of the CORDEX Flagship Pilot Study (FPS) on Urban Environments and Regional Climate Change (URB-RCC).
 | [doc](https://github.com/FPS-URB-RCC/urclimask/tree/main/doc) | Description of the algorithm for urban/rural delineation.
+| [masks](https://github.com/FPS-URB-RCC/urclimask/tree/main/masks) | Urban-rural masks in NetCDF format.
+| [plots](https://github.com/FPS-URB-RCC/urclimask/tree/main/plots) | Evaluation plots illustrating the rural–urban extent and some UHI analysis.
 
 ## Requirements
 
