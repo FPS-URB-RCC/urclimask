@@ -156,15 +156,15 @@ class UrbanIsland:
             codes_ins_city = self.obs_attr.code[self.obs_attr['inside_city'] == True]
             codes_out_city = self.obs_attr.code[self.obs_attr['inside_city'] == False]
     
-            obs_hour = self.obs_timeseries.groupby(self.obs_timeseries.index.hour).mean()
+            obs_hour = self.obs_time.groupby(self.obs_time.index.hour).mean()
     
             obs_hour_mean = pd.DataFrame(index=obs_hour.index)
             obs_hour_mean['rural_mean'] = obs_hour[codes_out_city].mean(axis=1).values
             obs_hour_mean['urban_mean'] = obs_hour[codes_ins_city].mean(axis=1).values
     
             obs_anomaly = obs_hour_mean.sub(obs_hour_mean['rural_mean'], axis=0)
-            raw_anomaly = obs_day.sub(obs_day_mean['rural_mean'], axis=0)
-            for code in obs_day.columns:
+            raw_anomaly = obs_hour.sub(obs_hour_mean['rural_mean'], axis=0)
+            for code in obs_hour.columns:
                 obs_anomaly[code] = raw_anomaly[code]
     
         if self.anomaly == 'rel':
@@ -355,6 +355,7 @@ class UrbanIsland:
                                                      linestyle='--', linewidth = 1)
             obs_anomaly[codes_out_city].plot(ax = ax, marker='o', color = 'g', 
                                                      linestyle='--', linewidth = 1)
+
             obs_anomaly['urban_mean'].plot(ax = ax, color='#A52A2A', linestyle='--', marker='o',
                                                          linewidth = 4, label='Urban mean (obs.)', 
                                                          zorder = 2000) 
@@ -478,25 +479,14 @@ class UrbanIsland:
                                                      linestyle='--', linewidth = 2)
             obs_anomaly[codes_out_city].plot(ax = ax, marker='o', color = 'g', 
                                                      linestyle='--', linewidth = 2)
-            obs_anomaly[codes_ins_city].mean(axis = 0).values.plot(ax = ax, color='k', linestyle='-', 
-                                                         linewidth = 4, label='Urban obs. mean', 
+            obs_anomaly['urban_mean'].plot(ax = ax, color= 'k', linestyle='--', marker='o',
+                                                         linewidth = 4, label='Urban mean (obs.)', 
                                                          zorder = 2000) 
 
-            self.obs_anomaly[codes_out_city].mean(axis = 0).plot(ax = ax, color='g', linestyle='-', 
-                                                         linewidth = 4, label='Vicinity obs. mean', 
+            obs_anomaly['rural_mean'].plot(ax = ax, color='g', linestyle='--', marker='o',
+                                                         linewidth = 4, label='Vicinity mean (obs.)', 
                                                          zorder = 2000)
-            codes_city = valid_stations.code[valid_stations['city'] == city]
-            time_series_hour = time_series.groupby(time_series.index.hour).mean()
-            time_series_hour_mean = pd.DataFrame(index=time_series_hour.index)
-            time_series_hour_mean['urban_mean'] = time_series_hour[codes_city].mean(axis=1).values
-            time_series_anomaly = time_series_hour.sub(time_series_hour_mean['urban_mean'], axis=0)
-        
-            time_series_anomaly[codes_city].plot(ax=ax, marker='o', color='k', 
-                                                 linestyle='--', linewidth=2)
-        
-            time_series_hour_mean['urban_mean'].plot(ax=ax, color='k', linestyle='-', 
-                                                     linewidth=4, label='Urban obs. mean', 
-                                                     zorder=2000)
+
         
         ax.set_xticks(np.arange(0, 24))
         ax.set_xticklabels([f'{h}' for h in range(24)], fontsize=12)
