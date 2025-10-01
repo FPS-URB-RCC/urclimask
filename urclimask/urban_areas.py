@@ -1,4 +1,3 @@
-
 import cartopy.crs as ccrs
 import dask
 import pandas as pd
@@ -14,6 +13,7 @@ from matplotlib.colors import LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from skimage.morphology import dilation, square, remove_small_objects
 from  skimage import measure, morphology
+from pyproj import Geod
 
 
 from shapely.geometry import box
@@ -139,59 +139,58 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
             ds = ds.sel(lat=slice(lat_min, lat_max), lon=slice(lon_min, lon_max))
         return ds
 
-
-    def remove_small_city(self,
-                          *, 
-                          mask: xr.DataArray) -> xr.DataArray:
+    def remove_small_city(self, *, mask: xr.DataArray) -> xr.DataArray:
         """
-        Remove small urban regions from an input binary mask, retaining only the largest 
-        or the region closest to the predefined city center if necessary.
-    
-        Parameters
-        ----------
-        mask : xarray.DataArray
-            A binary mask (values 0 and 1) where 1 indicates urban areas.
-        
-        Returns
-        -------
-        xr.DataArray
-            A cleaned binary mask where small objects have been removed, 
-            preserving only the main urban region.
+        Remove small urban regions from a binary mask, retaining only the largest 
+        or, if none meet the size threshold, the region closest to the predefined city center.
         """
         # Label connected regions in the mask
         labeled_mask = measure.label(mask.values)
     
-        # Remove small objects based on a minimum city size threshold
+        # Remove small objects based on the minimum city size threshold
         cleaned_mask = morphology.remove_small_objects(labeled_mask, min_size=self.min_city_size)
     
-        # If all objects were removed, select the region closest to the city center
-        if np.max(cleaned_mask) == 0:
-            # Calculate pixel indices closest to the city center coordinates
-            y_center = np.abs(mask.cf['lat'].values - self.lat_city).argmin()
-            x_center = np.abs(mask.cf['lon'] - self.lon_city).argmin()
-            center_pixel = np.array([y_center, x_center])
+        # --- City center coordinates ---
+        # Extract latitude and longitude values (assumed 2D)
+        lat_vals = mask.cf['lat'].values
+        lon_vals = mask.cf['lon'].values
     
-            # Compute distances from each region centroid to the city center
+        # Identify the grid cell closest to the city center in geographic coordinates
+        dist_to_center = (lat_vals - self.lat_city)**2 + (lon_vals - self.lon_city)**2
+        y_center, x_center = np.unravel_index(dist_to_center.argmin(), dist_to_center.shape)
+    
+        # Exact geographic coordinates of the city center
+        lat_center = float(lat_vals[y_center, x_center])
+        lon_center = float(lon_vals[y_center, x_center])
+    
+        geod = Geod(ellps="WGS84")
+    
+        # --- Case 1: there are regions above the minimum size threshold ---
+        if np.max(cleaned_mask) > 0:
+            final_mask = (cleaned_mask > 0)
+    
+        # --- Case 2: all regions are below the threshold, select the closest to the city center ---
+        else:
             distances = []
             for region in measure.regionprops(labeled_mask):
-                region_center = np.array(region.centroid)  # (row, col) format
-                distance = np.linalg.norm(region_center - center_pixel)
-                distances.append((region.label, distance))
+                row, col = region.centroid
+                rlat = float(lat_vals[int(round(row)), int(round(col))])
+                rlon = float(lon_vals[int(round(row)), int(round(col))])
     
-            # Select the label of the closest region
+                # Compute geodesic distance from the city center
+                _, _, dist = geod.inv(lon_center, lat_center, rlon, rlat)
+                distances.append((region.label, dist))
+    
+            # Select the label of the region closest to the city center
             closest_label = min(distances, key=lambda x: x[1])[0]
+            final_mask = (labeled_mask == closest_label)
     
-            # Create a mask keeping only the closest region
-            cleaned_mask = (labeled_mask == closest_label)
-        else:
-            # If objects remain, set the cleaned_mask to 1 (urban) and 0 (non-urban)
-            cleaned_mask = (cleaned_mask > 0)
-    
-        # Return the result as an xarray.DataArray with the original coordinates
+        # Return the cleaned mask as an xarray.DataArray with original coordinates
         return xr.DataArray(
-            cleaned_mask.astype(int),
+            final_mask.astype(int),
             coords=mask.coords,
-            dims=mask.dims)
+            dims=mask.dims
+        )
 
     def define_masks(
         self, 
