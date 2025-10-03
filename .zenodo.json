@@ -59,7 +59,7 @@
 
     "license": "CC-BY-4.0",
 
-    "title": "Code and masks supporting the article -Delineating CORDEX model urban areas and their rural surroundings for megacities worldwide to assess urban climate change-",
+    "title": "URCLIMASK: A Python Package for Delineating Urban Areas and Their Surrounding Reference Rural Regions from Regional Climate Models (RCMs)",
      
     "description": "<p>This repository includes the 'urclimask' Python package to delineate urban areas and their rural surrounding areas from Regional Climate Models (RCMs). Additionally, it contains the masks used in various international projects such as the CORDEX FPS URB-RCC, the C3S Climate Atlas (https://atlas.climate.copernicus.eu/atlas), among others.</p>",
 
