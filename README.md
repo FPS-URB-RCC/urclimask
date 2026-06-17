@@ -6,12 +6,12 @@ A description of the algorithm used to delineate urban and rural areas can be fo
 
 A paper describing and testing the algorithm has been published in the scientific journal Scientific Data. The paper can be cited as:
 
-Diez-Sierra, J., Quintana, Y., Langendijk, G.S. et al. A global CORDEX-based dataset delineating urban areas and their surroundings to assess climate change in megacities. Sci Data 12, 1961 (2025). https://doi.org/10.1038/s41597-025-06257-1
+- Diez-Sierra, J., Quintana, Y., Langendijk, G.S. et al. A global CORDEX-based dataset delineating urban areas and their surroundings to assess climate change in megacities. Sci Data 12, 1961 (2025). https://doi.org/10.1038/s41597-025-06257-1
 
 Examples of studies where the algorithm has been applied include:
 
-Langendijk, G.S., Fernandez, J., Demuzere, M. et al. Representation of global mega-cities and their urban heat island in CORDEX-CORE regional climate model simulations. npj Urban Sustain 6, 53 (2026). https://doi.org/10.1038/s42949-025-00325-6
-Solman, S.A., Quintana, Y., Milovac, J. et al. Assessment of Convection-Permitting Simulations in Representing the Urban-Rural Contrasts over Selected Cities in South America. Earth Syst Environ (2026). https://doi.org/10.1007/s41748-026-01250-z
+- Langendijk, G.S., Fernandez, J., Demuzere, M. et al. Representation of global mega-cities and their urban heat island in CORDEX-CORE regional climate model simulations. npj Urban Sustain 6, 53 (2026). https://doi.org/10.1038/s42949-025-00325-6
+- Solman, S.A., Quintana, Y., Milovac, J. et al. Assessment of Convection-Permitting Simulations in Representing the Urban-Rural Contrasts over Selected Cities in South America. Earth Syst Environ (2026). https://doi.org/10.1007/s41748-026-01250-z
 
 
 
