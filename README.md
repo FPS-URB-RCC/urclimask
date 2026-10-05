@@ -10,7 +10,7 @@ A paper describing and testing the algorithm has been published in the scientifi
 
 Examples of studies where the algorithm has been applied include:
 
--Diez-Sierra, J., Zazulie, N., Langendijk, G. S., Quintana, Y., Adinolfi, M., … Wang, F. (2026). Urban climate evaluation in the upcoming generation of CMIP6-driven EURO-CORDEX regional climate simulations. Urban Climate, 69, 103103. https://doi.org/10.1016/j.uclim.2026.103103
+- Diez-Sierra, J., Zazulie, N., Langendijk, G. S., Quintana, Y., Adinolfi, M., … Wang, F. (2026). Urban climate evaluation in the upcoming generation of CMIP6-driven EURO-CORDEX regional climate simulations. Urban Climate, 69, 103103. https://doi.org/10.1016/j.uclim.2026.103103
 - Langendijk, G.S., Fernandez, J., Demuzere, M. et al. Representation of global mega-cities and their urban heat island in CORDEX-CORE regional climate model simulations. npj Urban Sustain 6, 53 (2026). https://doi.org/10.1038/s42949-025-00325-6
 - Solman, S.A., Quintana, Y., Milovac, J. et al. Assessment of Convection-Permitting Simulations in Representing the Urban-Rural Contrasts over Selected Cities in South America. Earth Syst Environ (2026). https://doi.org/10.1007/s41748-026-01250-z
 
