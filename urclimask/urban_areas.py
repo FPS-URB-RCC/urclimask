@@ -12,7 +12,9 @@ from itertools import product
 from matplotlib.colors import LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from skimage.morphology import dilation, square, remove_small_objects
-from  skimage import measure, morphology
+from skimage import measure, morphology
+from skimage.measure import label, regionprops
+from scipy.ndimage import distance_transform_edt
 from pyproj import Geod
 
 
@@ -31,6 +33,7 @@ class UrbanVicinity:
         sftlf_th : float = 70,
         ratio_r2u : float = 2.0, 
         min_city_size : int = 0, 
+        max_connectivity_distance : float | None = None,
         lon_city : float | None = None,
         lat_city : float | None = None,
         lon_lim : float = 1.0,
@@ -56,6 +59,8 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
             Ratio between rural surrounding and urban grid boxes
         min_city_size : int
             Remove urban nuclei smaller than the specified size.
+        max_connectivity_distance : float
+        Maximum Euclidean distance (in grid cells) allowed between a connected urban component and the central urban component for them to be considered connected. Components whose minimum distance to the boundary region is less than or equal to this threshold are retained.
         lon_city : float
             Longitude of the city cente        
         lat_city : float
@@ -78,6 +83,7 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         self.sftlf_th = sftlf_th
         self.ratio_r2u = ratio_r2u
         self.min_city_size = min_city_size
+        self.max_connectivity_distance = max_connectivity_distance
         self.lon_city = lon_city
         self.lat_city = lat_city
         self.lon_lim = lon_lim
@@ -192,6 +198,64 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
             dims=mask.dims
         )
 
+    def connectivity_filter(self, *, grid: xr.DataArray, threshold: float | None = None) -> xr.DataArray:
+        """
+        Filters connected components in a binary grid based on their
+        proximity to the largest (central) component.
+    
+        Parameters
+        ----------
+        grid : np.ndarray
+            Binary 2D array where 1 represents foreground objects.
+        threshold : float
+            Maximum allowed distance (grid-cells) from the central component
+            for other components to be kept.
+    
+        Returns
+        -------
+        filtered : np.ndarray
+            Binary 2D array containing:
+            - the largest component (always kept)
+            - other components whose minimum distance to it
+              is less than or equal to `threshold`
+        """
+    
+        # Label all connected components in the binary grid
+        labels = label(grid)
+        props = regionprops(labels)
+    
+        if len(props) == 0:
+            return np.zeros_like(grid)
+    
+        # Identify the largest component (assumed "central")
+        central_label = max(props, key=lambda r: r.area).label
+        central_mask = (labels == central_label)
+    
+        # Compute distance transform from the central component
+        # (distance of each background pixel to the nearest central pixel)
+        dist_map = distance_transform_edt(~central_mask)
+    
+        # Initialize output mask
+        filtered = np.zeros_like(grid)
+    
+        for region in props:
+            # Always keep the central component
+            if region.label == central_label:
+                filtered[labels == region.label] = 1
+                continue
+    
+            # Extract pixel coordinates of the region
+            coords = region.coords
+    
+            # Compute minimum distance from this region to the central component
+            min_dist = dist_map[coords[:, 0], coords[:, 1]].min()
+    
+            # Keep the region if it is close enough to the central structure
+            if min_dist <= threshold:
+                filtered[labels == region.label] = 1
+    
+        return filtered
+    
     def define_masks(
         self, 
         *,
@@ -225,7 +289,13 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         # sfturf
         sfturf_mask = ds_sfturf[self.urban_var] > self.urban_th
         # Remove small objects
-        sfturf_mask_rem_small = UrbanVicinity.remove_small_city(self,mask = sfturf_mask.astype(bool))
+        sfturf_mask_rem_small = UrbanVicinity.remove_small_city(self, 
+                                                                mask = sfturf_mask.astype(bool))
+        # Filter by distance
+        if self.max_connectivity_distance is not None:
+            sfturf_mask_rem_small = self.connectivity_filter(
+                grid=sfturf_mask_rem_small,
+                threshold=self.max_connectivity_distance)
         sfturf_mask.data = sfturf_mask_rem_small
         deleted_small = ~sfturf_mask_rem_small*(ds_sfturf[self.urban_var] > self.urban_th)
         # Calculate surrounding mask and delete small objects from it
@@ -240,7 +310,7 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         #orog_mask2 = ds_orog["orog"] > (urban_elev_min - self.orog_diff)
         #orog_mask = orog_mask1 & orog_mask2
         
-        #sftlf
+        # sftlf
         sftlf_mask = ds_sftlf["sftlf"] > self.sftlf_th   
         
         # Apply orog and sftlf thresholds to the urban_mask
@@ -374,7 +444,8 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         ds['urmask'].attrs['long_name'] = 'Urban vs. vicinity. 1 corresponds to urban areas and 0 to the surrounding areas'
         
         attrs_list = ["urban_th", "urban_sur_th", "orog_diff", "sftlf_th", "sftlf_th", "ratio_r2u", 
-                      "min_city_size", "lon_city", "lat_city", "lon_lim", "lat_lim", "model", "domain"]
+                      "min_city_size", "max_connectivity_distance", 
+                      "lon_city", "lat_city", "lon_lim", "lat_lim", "model", "domain"]
         
         for attr in attrs_list:
             if getattr(self, attr):
