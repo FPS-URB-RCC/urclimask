@@ -198,7 +198,7 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
             dims=mask.dims
         )
 
-    def connectivity_filter(self, *, grid: xr.DataArray, threshold: float | None = None) -> xr.DataArray:
+    def connectivity_filter(self, *, grid: xr.DataArray, threshold: float | None = None, central_component: str = "centroid",) -> xr.DataArray:
         """
         Filters connected components in a binary grid based on their
         proximity to the largest (central) component.
@@ -210,6 +210,10 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
         threshold : float
             Maximum allowed distance (grid-cells) from the central component
             for other components to be kept.
+        central_component : str, default="centroid" 
+            Criterion used to identify the central component. Supported values:
+                - ``"centroid"``: selects the connected component whose centroid is closest to the geometric center of the grid. 
+                - ``"largest"``: selects the largest component.
     
         Returns
         -------
@@ -226,9 +230,20 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
     
         if len(props) == 0:
             return np.zeros_like(grid)
-    
-        # Identify the largest component (assumed "central")
-        central_label = max(props, key=lambda r: r.area).label
+
+        if central_component == 'largest':
+            # Identify the largest component (assumed "central")
+            central_label = max(props, key=lambda r: r.area).label
+        elif central_component == 'centroid':
+            # Identify the component whose centroid is closest to the grid center
+            grid_center = np.array(grid.shape) / 2.0
+            
+            central_region = min(
+                props,
+                key=lambda r: np.linalg.norm(np.array(r.centroid) - grid_center)
+            )
+            central_label = central_region.label        
+
         central_mask = (labels == central_label)
     
         # Compute distance transform from the central component
@@ -296,7 +311,7 @@ Altitude difference (m) respects the maximum and minimum elevation of the urban 
             sfturf_mask_rem_small = self.connectivity_filter(
                 grid=sfturf_mask_rem_small,
                 threshold=self.max_connectivity_distance)
-        sfturf_mask.data = sfturf_mask_rem_small
+        sfturf_mask.data = sfturf_mask_rem_small        
         deleted_small = ~sfturf_mask_rem_small*(ds_sfturf[self.urban_var] > self.urban_th)
         # Calculate surrounding mask and delete small objects from it
         sfturf_sur_mask_1 = ds_sfturf[self.urban_var] <= self.urban_th
